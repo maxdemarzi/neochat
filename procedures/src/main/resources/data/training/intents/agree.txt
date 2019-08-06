@@ -1,0 +1,32 @@
+absolutely
+alright
+alrighty
+affirmative
+aye
+i like it
+<START:member> Lisa <END> will love that
+i want it
+i think <START:member> Jim <END> would like it
+indeed
+<START:member> Janet <END> is going to love it
+fine
+for sure
+gladly
+of course
+ok
+okay
+okie dokie
+send it to <START:member> me <END>
+ship it
+ship it to <START:member> Frank <END>
+sold
+sounds good
+sure
+sure thing
+totally
+totes
+ya
+yeah
+yes
+you bet
+yup

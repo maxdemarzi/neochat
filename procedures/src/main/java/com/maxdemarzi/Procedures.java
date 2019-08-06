@@ -61,13 +61,15 @@ public class Procedures {
             String category = categorizer.getBestCategory(probabilitiesOfOutcomes);
 
             List<Map<String, Object>> args = new ArrayList<>();
-            for (NameFinderME nameFinderME : nameFinderMEs) {
-                Span[] spans = nameFinderME.find(tokens);
-                String[] names = Span.spansToStrings(spans, tokens);
-                for (int i = 0; i < spans.length; i++) {
-                    HashMap<String, Object> arg = new HashMap<>();
-                    arg.put(spans[i].getType(), names[i]);
-                    args.add(arg);
+            if( !(category.equals("greeting") || category.equals("complete")) ) {
+                for (NameFinderME nameFinderME : nameFinderMEs) {
+                    Span[] spans = nameFinderME.find(tokens);
+                    String[] names = Span.spansToStrings(spans, tokens);
+                    for (int i = 0; i < spans.length; i++) {
+                        HashMap<String, Object> arg = new HashMap<>();
+                        arg.put(spans[i].getType(), names[i]);
+                        args.add(arg);
+                    }
                 }
             }
 
@@ -77,7 +79,7 @@ public class Procedures {
         return results.stream();
     }
 
-        @Procedure(name = "com.maxdemarzi.train", mode = Mode.READ)
+    @Procedure(name = "com.maxdemarzi.train", mode = Mode.READ)
     @Description("CALL com.maxdemarzi.train()")
     public Stream<StringResult> train() {
         try {
@@ -120,7 +122,6 @@ public class Procedures {
             ObjectStream<DocumentSample> combinedDocumentSampleStream = ObjectStreamUtils.concatenateObjectStream(categoryStreams);
 
             TrainingParameters trainingParams = new TrainingParameters();
-            //trainingParams.put(TrainingParameters.ITERATIONS_PARAM, 10);
             trainingParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
             DoccatFactory factory = new DoccatFactory(new FeatureGenerator[] { new BagOfWordsFeatureGenerator() });
@@ -132,22 +133,34 @@ public class Procedures {
             // Initialize TokenFinders
             tokenNameFinderModels = new ArrayList<>();
 
-            ArrayList<String> slots = new ArrayList<>();
-//            slots.add("product");
-//            slots.add("category");
-//            slots.add("order");
-//            slots.add("member");
-//
-            for (String slot : slots) {
+            HashMap<String,ArrayList<String>> slots = new HashMap<>();
+            slots.put("product", new ArrayList<String>() {{
+                add("price_inquiry");
+                add("product_inquiry");
+            }});
+            slots.put("category", new ArrayList<String>() {{
+                add("category_inquiry");
+            }});
+            slots.put("member", new ArrayList<String>() {{
+                add("agree");
+            }});
+//            slots.add("order", new ArrayList<String>() {{
+//                add("order_inquiry");
+//            }});
+
+            for (Map.Entry<String, ArrayList<String>> slot : slots.entrySet()) {
                 List<ObjectStream<NameSample>> nameStreams = new ArrayList<>();
                 for (File trainingFile : trainingDirectory.listFiles()) {
-                    ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(trainingFile), "UTF-8");
-                    ObjectStream<NameSample> nameSampleStream = new NameSampleDataStream(lineStream);
-                    nameStreams.add(nameSampleStream);
+                    String intent = trainingFile.getName().replaceFirst("[.][^.]+$", "");
+                    if (slot.getValue().contains(intent)) {
+                        ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(trainingFile), "UTF-8");
+                        ObjectStream<NameSample> nameSampleStream = new NameSampleDataStream(lineStream);
+                        nameStreams.add(nameSampleStream);
+                    }
                 }
                 ObjectStream<NameSample> combinedNameSampleStream = ObjectStreamUtils.concatenateObjectStream(nameStreams);
 
-                TokenNameFinderModel tokenNameFinderModel = NameFinderME.train("en", slot, combinedNameSampleStream, trainingParams, new TokenNameFinderFactory());
+                TokenNameFinderModel tokenNameFinderModel = NameFinderME.train("en", slot.getKey(), combinedNameSampleStream, trainingParams, new TokenNameFinderFactory());
                 combinedNameSampleStream.close();
                 tokenNameFinderModels.add(tokenNameFinderModel);
             }
@@ -156,6 +169,21 @@ public class Procedures {
             for (TokenNameFinderModel tokenNameFinderModel : tokenNameFinderModels) {
                 nameFinderMEs.add(new NameFinderME(tokenNameFinderModel));
             }
+
+            // Add date NER model
+            modelIn = new FileInputStream(classLoader.getResource("data/models/en-ner-date.bin").getFile());
+            TokenNameFinderModel dateModel = new TokenNameFinderModel(modelIn);
+            nameFinderMEs.add(new NameFinderME(dateModel));
+
+            // Add money NER model
+            modelIn = new FileInputStream(classLoader.getResource("data/models/en-ner-money.bin").getFile());
+            TokenNameFinderModel moneyModel = new TokenNameFinderModel(modelIn);
+            nameFinderMEs.add(new NameFinderME(moneyModel));
+
+            // Add person NER model
+            modelIn = new FileInputStream(classLoader.getResource("data/models/en-ner-person.bin").getFile());
+            TokenNameFinderModel personModel = new TokenNameFinderModel(modelIn);
+            nameFinderMEs.add(new NameFinderME(personModel));
 
         } catch (IOException e) {
             e.printStackTrace();

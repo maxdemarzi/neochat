@@ -1,0 +1,16 @@
+are you carrying any <START:category> rocket launchers <END>
+do you carry <START:category> magical supplies <END>
+do you have <START:category> grapple guns <END> like batman
+give me a list of your <START:category> cyberweapons <END>
+got any <START:category> explosives <END> bang bang
+i am looking for a new <START:category> heavy machine gun <END>
+i need some <START:category> armor <END>
+let me see the <START:category> pistols <END>
+let me see some <START:category> tools <END>
+options for <START:category> bikes <END>
+show me your <START:category> shotguns <END>
+show me the <START:category> rifles <END>
+what kind of <START:category> rides <END> you got
+what <START:category> heavy pistols <END> do you have ?
+what is the best <START:category> cyberdeck <END> you carry ?
+you wouldn't happen to carry <START:category> perfumes <END> ?

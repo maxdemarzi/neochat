@@ -20,6 +20,7 @@ Intents
 
 - Greeting
 - Complete Conversation
+- Category Inquiry
 - Product Inquiry
 - Price Inquiry
 - Order Product

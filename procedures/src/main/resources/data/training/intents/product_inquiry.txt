@@ -1,0 +1,6 @@
+show me the <START:product> Ares Predator V <END>
+stats on that <START:product> Mack Hellhound <END>
+what is the capacity of the <START:product> Ares Vigorous Assault Cannon <END> ?
+what options does the <START:product> Ogre Hammer SWS Assault Cannon <END> have ?
+what colors does the <START:product> Armor Jacket <END> come in ?
+what is the range on the <START:product> MP Laser <END>?

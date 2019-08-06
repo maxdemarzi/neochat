@@ -5,6 +5,8 @@ import org.neo4j.driver.v1.*;
 import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
 
+import java.util.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.neo4j.driver.v1.Values.parameters;
 
@@ -42,9 +44,18 @@ public class IntentsTest {
 
             // Then I should get what I expect
             assertThat(result.single().get("intent").asString()).isEqualTo("greeting");
+
+            result = session.run( "CALL com.maxdemarzi.intents($text)",
+                    parameters( "text", "show me your shotguns" ) );
+            Record record = result.single();
+            assertThat(record.get("intent").asString()).isEqualTo("category_inquiry");
+            List<Object> args = record.get("args").asList();
+            Map<String, Object> arg = (Map<String, Object>)args.get(1);
+            assertThat(arg.containsKey("category"));
+            assertThat(arg.get("category").toString()).isEqualTo("shotguns");
         }
     }
 
     private static final String MODEL_STATEMENT = "";
-    ;
+
 }

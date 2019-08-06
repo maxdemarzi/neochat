@@ -1,0 +1,8 @@
+how much ?
+cost ?
+how much will a <START:product> Colt M23 <END> cost me ?
+how much does <START:product> this <END> cost ?
+what is the price
+what is the price of <START:product> that <END> ?
+how much is an <START:product> HK XM30 Shotgun <END> ?
+<START:product> Yamaha Nodachi <END> costs how much ?
