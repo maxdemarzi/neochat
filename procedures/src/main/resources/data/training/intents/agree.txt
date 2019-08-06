@@ -4,11 +4,11 @@ alrighty
 affirmative
 aye
 i like it
-<START:member> Lisa <END> will love that
+<START:member> lisa <END> will love that
 i want it
-i think <START:member> Jim <END> would like it
+i think <START:member> jim <END> would like it
 indeed
-<START:member> Janet <END> is going to love it
+<START:member> janet <END> is going to love it
 fine
 for sure
 gladly
@@ -18,7 +18,7 @@ okay
 okie dokie
 send it to <START:member> me <END>
 ship it
-ship it to <START:member> Frank <END>
+ship it to <START:member> frank <END>
 sold
 sounds good
 sure

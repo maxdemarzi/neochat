@@ -1,7 +1,10 @@
 package com.maxdemarzi;
 
+import com.maxdemarzi.decisions.DecisionTreeEvaluator;
+import com.maxdemarzi.decisions.DecisionTreeExpander;
 import com.maxdemarzi.results.IntentResult;
 import com.maxdemarzi.results.StringResult;
+import com.maxdemarzi.schema.Labels;
 import opennlp.tools.doccat.*;
 import opennlp.tools.lemmatizer.LemmatizerME;
 import opennlp.tools.lemmatizer.LemmatizerModel;
@@ -12,13 +15,16 @@ import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.*;
 import opennlp.tools.util.*;
-import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.Stream;
+
+import static com.maxdemarzi.schema.Properties.ID;
 
 public class Procedures {
 
@@ -41,17 +47,70 @@ public class Procedures {
     private static List<NameFinderME> nameFinderMEs;
 
 
+    @Procedure(name = "com.maxdemarzi.chat", mode = Mode.READ)
+    @Description("CALL com.maxdemarzi.chat(String id, String text)")
+    public Stream<IntentResult> chat(@Name(value = "id") String id, @Name(value = "text") String text) {
+        ArrayList<IntentResult> results = new ArrayList<>();
+        findIntents(text, results);
+
+        Node account = db.findNode(Labels.Account, ID, id);
+
+        for (IntentResult result : results) {
+            switch (result.intent) {
+                case "greeting":
+                    greetingAction(account, result);
+                    break;
+                case "complete":
+                    completeAction(account, result);
+                    break;
+            }
+        }
+
+        return results.stream();
+    }
+
+    private void completeAction(Node account, IntentResult result) {
+    }
+
+    private void greetingAction(Node account, IntentResult result) {
+        // Which Decision Tree are we interested in?
+        Node tree = db.findNode(Labels.Tree, ID, result.intent);
+        if ( tree != null) {
+
+            // Find the facts
+
+
+            // Find the paths by traversing this graph and the facts given
+           // return decisionPath(tree, facts);
+        }
+
+    }
+
+    private Stream<Path> decisionPath(Node tree, Map<String, String> facts) {
+        TraversalDescription myTraversal = db.traversalDescription()
+                .depthFirst()
+                .expand(new DecisionTreeExpander(facts))
+                .evaluator(new DecisionTreeEvaluator(facts));
+
+        return myTraversal.traverse(tree).stream();
+    }
+
     @Procedure(name = "com.maxdemarzi.intents", mode = Mode.READ)
     @Description("CALL com.maxdemarzi.intents(String text)")
-    public Stream<IntentResult> intent(@Name(value = "text") String text) {
-        String[] sentences = sentencizer.sentDetect(text);
+    public Stream<IntentResult> intents(@Name(value = "text") String text) {
         ArrayList<IntentResult> results = new ArrayList<>();
+        findIntents(text, results);
+        return results.stream();
+    }
+
+    private void findIntents(String text, ArrayList<IntentResult> results) {
+        String[] sentences = sentencizer.sentDetect(text);
 
         for (String sentence : sentences) {
             // Separate words from each sentence using tokenizer.
             String[] tokens = tokenizer.tokenize(sentence);
 
-            // Tag separated words with POS tags to understand their gramatical structure.
+            // Tag separated words with POS tags to understand their grammatical structure.
             String[] posTags = partOfSpeecher.tag(tokens);
 
             // Lemmatize each word so that its easy to categorize.
@@ -75,8 +134,6 @@ public class Procedures {
 
             results.add(new IntentResult(category, args));
         }
-
-        return results.stream();
     }
 
     @Procedure(name = "com.maxdemarzi.train", mode = Mode.READ)

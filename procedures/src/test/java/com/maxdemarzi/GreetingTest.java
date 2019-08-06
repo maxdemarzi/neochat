@@ -11,7 +11,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.neo4j.driver.v1.Values.parameters;
 
-public class IntentsTest {
+public class GreetingTest {
+
     private static ServerControls neo4j;
 
     @BeforeAll
@@ -28,7 +29,7 @@ public class IntentsTest {
     }
 
     @Test
-    void shouldFindIntents()
+    void shouldGreet()
     {
         // In a try-block, to make sure we close the driver after the test
         try( Driver driver = GraphDatabase.driver( neo4j.boltURI() , Config.build().withoutEncryption().toConfig() ) )
@@ -46,8 +47,8 @@ public class IntentsTest {
             // Then I should get what I expect
             assertThat(result.single().get("intent").asString()).isEqualTo("greeting");
 
-            result = session.run( "CALL com.maxdemarzi.intents($text)",
-                    parameters( "text", "show me your shotguns" ) );
+            result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
+                    parameters( "id", "a1" ,"text", "show me your shotguns" ) );
             Record record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("category_inquiry");
             List<Object> args = record.get("args").asList();
@@ -57,6 +58,10 @@ public class IntentsTest {
         }
     }
 
-    private static final String MODEL_STATEMENT = "";
-
+    private static final String MODEL_STATEMENT =
+            "CREATE (a1:Account {id:'a1'})" +
+            "CREATE (m1:Member {username:'maxdemarzi', name:'Max'})" +
+            "CREATE (i1:Intent {name:'greeting'})" +
+            "CREATE (i1a1:Action {response:'Hi!'})" +
+            "";
 }

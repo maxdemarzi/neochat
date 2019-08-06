@@ -1,6 +1,7 @@
 package com.maxdemarzi.results;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class IntentResult {
     public final String intent;

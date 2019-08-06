@@ -15,6 +15,8 @@
         <neo4j.version>3.5.8</neo4j.version>
         <neo4j.driver.version>1.7.5</neo4j.driver.version>
         <opennlp.version>1.9.1</opennlp.version>
+        <commons-text.version>1.7</commons-text.version>
+        <janino.version>3.0.15</janino.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -25,6 +27,30 @@
             <artifactId>opennlp-tools</artifactId>
             <version>${opennlp.version}</version>
         </dependency>
+
+        <!-- Commons Text -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons-text.version}</version>
+        </dependency>
+
+        <!-- Janino Compiler -->
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>${janino.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>commons-compiler</artifactId>
+            <version>${janino.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Neo4j -->
 
         <dependency>
             <!-- This gives us the Procedure API our runtime code uses.
