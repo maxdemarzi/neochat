@@ -24,7 +24,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static com.maxdemarzi.schema.Properties.ID;
+import static com.maxdemarzi.schema.Properties.*;
 
 public class Procedures {
 
@@ -76,17 +76,36 @@ public class Procedures {
         // Which Decision Tree are we interested in?
         Node tree = db.findNode(Labels.Tree, ID, result.intent);
         if ( tree != null) {
-
             // Find the facts
+            Map<String, Object> facts = new HashMap<>();
+            facts.put("account_node_id", account.getId());
+            Result factResult = db.execute("MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE ID(a) = $account_node_id RETURN 'name' AS key, COALESCE(member.name, '') AS value", facts);
+            Map<String, Object> factMap = factResult.next();
+            facts.put((String)factMap.get("key"), factMap.get("value"));
 
+            Stream<Path> paths = decisionPath(tree, facts);
+            Path path = paths.findFirst().get();
 
-            // Find the paths by traversing this graph and the facts given
-           // return decisionPath(tree, facts);
+            String query = (String)path.endNode().getProperty(QUERY);
+            String response = "";
+            try ( Result queryResult = db.execute( query ) ) {
+                while (queryResult.hasNext()) {
+                    Map<String, Object> row = queryResult.next();
+                    response = (String)row.get("value");
+                }
+            }
+
+            for (Map.Entry<String, Object> entry : facts.entrySet()) {
+                String key = "\\$" + entry.getKey();
+                response = response.replaceAll(key, entry.getValue().toString() );
+            }
+
+            result.setResponse(response);
         }
 
     }
 
-    private Stream<Path> decisionPath(Node tree, Map<String, String> facts) {
+    private Stream<Path> decisionPath(Node tree, Map<String, Object> facts) {
         TraversalDescription myTraversal = db.traversalDescription()
                 .depthFirst()
                 .expand(new DecisionTreeExpander(facts))

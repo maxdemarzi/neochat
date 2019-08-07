@@ -51,7 +51,7 @@ public class IntentsTest {
             Record record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("category_inquiry");
             List<Object> args = record.get("args").asList();
-            Map<String, Object> arg = (Map<String, Object>)args.get(1);
+            Map<String, Object> arg = (Map<String, Object>)args.get(0);
             assertThat(arg.containsKey("category"));
             assertThat(arg.get("category").toString()).isEqualTo("shotguns");
         }

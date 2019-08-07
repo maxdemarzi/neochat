@@ -5,7 +5,8 @@ import org.neo4j.graphdb.RelationshipType;
 public enum RelationshipTypes implements RelationshipType {
     HAS,
     HAS_ACTION,
-    HAS_OPTION,
+    HAS_MEMBER,
+    HAS_RESPONSE,
     IN_CATEGORY,
     REQUIRES
 }

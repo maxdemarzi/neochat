@@ -10,9 +10,9 @@ import java.util.Map;
 import static com.maxdemarzi.schema.Properties.ID;
 
 public class DecisionTreeEvaluator implements PathEvaluator {
-    private Map<String, String> facts;
+    private Map<String, Object> facts;
 
-    public DecisionTreeEvaluator(Map<String, String> facts) {
+    public DecisionTreeEvaluator(Map<String, Object> facts) {
         this.facts = facts;
     }
 

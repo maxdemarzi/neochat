@@ -1,12 +1,10 @@
 package com.maxdemarzi;
 
+import com.maxdemarzi.seed.Decisions;
 import org.junit.jupiter.api.*;
 import org.neo4j.driver.v1.*;
 import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.neo4j.driver.v1.Values.parameters;
@@ -19,6 +17,7 @@ public class GreetingTest {
     static void startNeo4j() {
         neo4j = TestServerBuilders.newInProcessBuilder()
                 .withProcedure(Procedures.class)
+                .withProcedure(Decisions.class)
                 .withFixture(MODEL_STATEMENT)
                 .newServer();
     }
@@ -40,6 +39,7 @@ public class GreetingTest {
             Session session = driver.session();
 
             // When I use the procedure
+            session.run( "CALL com.maxdemarzi.seed.decisions()");
             session.run( "CALL com.maxdemarzi.train" );
             StatementResult result = session.run( "CALL com.maxdemarzi.intents($text)",
                     parameters( "text", "Hello?" ) );
@@ -48,20 +48,36 @@ public class GreetingTest {
             assertThat(result.single().get("intent").asString()).isEqualTo("greeting");
 
             result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
-                    parameters( "id", "a1" ,"text", "show me your shotguns" ) );
+                    parameters( "id", "a1" ,"text", "Hello?" ) );
+
             Record record = result.single();
-            assertThat(record.get("intent").asString()).isEqualTo("category_inquiry");
-            List<Object> args = record.get("args").asList();
-            Map<String, Object> arg = (Map<String, Object>)args.get(1);
-            assertThat(arg.containsKey("category"));
-            assertThat(arg.get("category").toString()).isEqualTo("shotguns");
+            assertThat(record.get("intent").asString()).isEqualTo("greeting");
+            assertThat(record.get("response").asString()).endsWith("Max!");
+
+            result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
+                    parameters( "id", "a2" ,"text", "Hello?" ) );
+
+             record = result.single();
+            assertThat(record.get("intent").asString()).isEqualTo("greeting");
+            assertThat(record.get("response").asString()).doesNotContain("Max");
         }
     }
 
     private static final String MODEL_STATEMENT =
             "CREATE (a1:Account {id:'a1'})" +
             "CREATE (m1:Member {username:'maxdemarzi', name:'Max'})" +
-            "CREATE (i1:Intent {name:'greeting'})" +
-            "CREATE (i1a1:Action {response:'Hi!'})" +
-            "";
+            "CREATE (a1)-[:HAS_MEMBER]->(m1)" +
+            "CREATE (a2:Account {id:'a2'})" +
+            "CREATE (m2:Member {username:'nobody'})" +
+            "CREATE (a2)-[:HAS_MEMBER]->(m2)" +
+            "CREATE (i1:Intent {id:'greeting'})" +
+            "CREATE (i1r1:Response {text:'Hi $name!', parameter_names:['name']})" +
+            "CREATE (i1r2:Response {text:'Hello $name!', parameter_names:['name']})" +
+            "CREATE (i1r3:Response {text:'Hello there!', parameter_names:[]})" +
+            "CREATE (i1r4:Response {text:'Hiya!', parameter_names:[]})" +
+            "CREATE (i1)-[:HAS_RESPONSE]->(i1r1)" +
+            "CREATE (i1)-[:HAS_RESPONSE]->(i1r2)" +
+            "CREATE (i1)-[:HAS_RESPONSE]->(i1r3)" +
+            "CREATE (i1)-[:HAS_RESPONSE]->(i1r4)"
+            ;
 }

@@ -13,9 +13,9 @@ import static com.maxdemarzi.decisions.DecisionTree.trueOrFalse;
 
 
 public class DecisionTreeExpander implements PathExpander {
-    private Map<String, String> facts;
+    private Map<String, Object> facts;
 
-    public DecisionTreeExpander(Map<String, String> facts) {
+    public DecisionTreeExpander(Map<String, Object> facts) {
         this.facts = facts;
     }
 

@@ -30,7 +30,7 @@ class DecisionTree {
         return (boolean) ee.evaluate(arguments);
     }
 
-    static RelationshipType trueOrFalse(Node node, Map<String, String> facts) throws Exception {
+    static RelationshipType trueOrFalse(Node node, Map<String, Object> facts) throws Exception {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setExpressionType(boolean.class);
 
@@ -40,7 +40,7 @@ class DecisionTree {
         // Fill the arguments array with their corresponding values
         Object[] arguments = new Object[parameterNames.length];
         for (int j = 0; j < parameterNames.length; ++j) {
-            arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]));
+            arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
         }
 
         // Set our parameters with their matching types
@@ -52,7 +52,7 @@ class DecisionTree {
         return RelationshipType.withName("IS_" + ee.evaluate(arguments).toString().toUpperCase());
     }
 
-    static RelationshipType choosePath(Node node, Map<String, String> facts) throws Exception {
+    static RelationshipType choosePath(Node node, Map<String, Object> facts) throws Exception {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setReturnType(String.class);
 
@@ -63,7 +63,7 @@ class DecisionTree {
         // Fill the arguments array with their corresponding values
         Object[] arguments = new Object[parameterNames.length];
         for (int j = 0; j < parameterNames.length; ++j) {
-            arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]));
+            arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
         }
 
         // Set our parameters with their matching types

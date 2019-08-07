@@ -41,7 +41,7 @@ public class StepWiseDecisionTreeTraverser {
 
     @Procedure(name = "com.maxdemarzi.stepwise.decision_tree", mode = Mode.READ)
     @Description("CALL com.maxdemarzi.stepwise.decision_tree(tree, facts) - traverse stepwise decision tree")
-    public Stream<PathResult> traverseStepWiseDecisionTree(@Name("tree") String id, @Name("facts") Map<String, String> facts) throws IOException {
+    public Stream<PathResult> traverseStepWiseDecisionTree(@Name("tree") String id, @Name("facts") Map<String, Object> facts) throws IOException {
         // Which Decision Tree are we interested in?
         Node tree = db.findNode(Labels.Tree, "id", id);
         if ( tree != null) {
@@ -51,7 +51,7 @@ public class StepWiseDecisionTreeTraverser {
         return null;
     }
 
-    private Stream<PathResult> decisionPath(Node tree, Map<String, String> facts) {
+    private Stream<PathResult> decisionPath(Node tree, Map<String, Object> facts) {
         TraversalDescription myTraversal = db.traversalDescription()
                 .depthFirst()
                 .expand(new DecisionTreeExpander(facts))
