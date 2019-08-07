@@ -29,8 +29,6 @@ public class App extends Jooby {
 
         // Configure public static files
         Path assets = Paths.get("public/assets");
-        //assets("/assets/*", assets);
-        //assets("/assets/*");
         assets("/assets/?*", assets);
         assets("/favicon.ico", "/public/assets/ico/favicon.ico");
 
@@ -40,7 +38,7 @@ public class App extends Jooby {
         get("/privacy", ctx -> views.footer.privacy.template());
         get("/terms",  ctx -> views.footer.terms.template());
 
-
+        // Public Pages
         get("/", ctx -> views.index.template());
         get("/register", ctx -> views.register.template());
         post("/register", ctx -> {
@@ -84,6 +82,7 @@ public class App extends Jooby {
             return views.signin.template();
         });
 
+        // Private pages - Sign in required for anything below this line
         decorator(next -> ctx -> {
             // If they have a username in this session, pass through
             if (ctx.session().get("username").valueOrNull() != null) {
