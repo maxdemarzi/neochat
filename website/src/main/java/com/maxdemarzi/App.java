@@ -7,13 +7,11 @@ import io.jooby.json.JacksonModule;
 import io.jooby.rocker.RockerModule;
 import org.mindrot.jbcrypt.BCrypt;
 import org.neo4j.driver.v1.Driver;
-import org.pac4j.core.credentials.UsernamePasswordCredentials;
-import org.pac4j.http.client.indirect.FormClient;
 
-import java.net.CookieStore;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Map;
+import java.util.TimeZone;
 
 public class App extends Jooby {
 
@@ -22,7 +20,7 @@ public class App extends Jooby {
         install(new Neo4jModule());
         install(new RockerModule());
 
-       //RockerRuntime.getInstance().setReloading(true);
+        RockerRuntime.getInstance().setReloading(true);
 
         install(new JacksonModule());
         ObjectMapper mapper = require(ObjectMapper.class);
@@ -108,9 +106,15 @@ public class App extends Jooby {
         });
 
         get("/home", ctx -> {
-            return views.home.template("gothere");
+            String username = ctx.session().get("username").value();
+            return views.home.template(username);
         });
 
+        get("/signout", ctx -> {
+            ctx.session().destroy();
+            ctx.setResponseCookie(new Cookie("token").setMaxAge(0));
+            return ctx.sendRedirect("/");
+        });
     }
 
     public static void main(String[] args) {

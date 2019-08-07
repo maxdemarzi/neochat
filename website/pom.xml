@@ -23,6 +23,7 @@
         <neo4j.version>3.5.8</neo4j.version>
         <pac4j.version>3.7.0</pac4j.version>
         <bcrypt.version>0.4</bcrypt.version>
+        <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Startup class -->
@@ -46,7 +47,7 @@
             <groupId>com.fizzed</groupId>
             <artifactId>rocker-compiler</artifactId>
             <version>${rocker.version}</version>
-            <scope>provided</scope>
+            <!-- <scope>provided</scope> -->
         </dependency>
 
         <!-- JSON -->
@@ -127,7 +128,7 @@
                         </goals>
                         <configuration>
                             <templateDirectory>public</templateDirectory>
-                            <touchFile>/dev/null</touchFile>
+                            <touchFile>pom.xml</touchFile>
                             <optimize>false</optimize>
                         </configuration>
                     </execution>

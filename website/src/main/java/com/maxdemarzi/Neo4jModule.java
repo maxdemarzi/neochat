@@ -18,7 +18,7 @@ public class Neo4jModule implements Extension {
 
         ServiceRegistry registry = application.getServices();
         registry.put(Driver.class, driver);
-        application.onStop(driver::close);
+        application.onStop(driver);
     }
 
 }
