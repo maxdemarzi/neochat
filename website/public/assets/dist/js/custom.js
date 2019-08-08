@@ -1,8 +1,10 @@
 (function() {
     var httpRequest;
-    document.getElementById("sendText").onclick = function() {
+    var chatWindow = document.getElementById("chatWindow");
+    var sendText = document.getElementById("sendText").onclick = function(evt) {
         var chatText = document.getElementById("chatText").value;
         makeRequest(chatText);
+        evt.preventDefault();
     };
 
     function makeRequest(chatText) {
@@ -12,86 +14,57 @@
             alert('Giving up :( Cannot create an XMLHTTP instance');
             return false;
         }
-        httpRequest.onreadystatechange = alertContents;
-        httpRequest.open('POST', '/chat');
+
+        httpRequest.onreadystatechange = updateChat;//(chatText);
+        httpRequest.open('POST', '/chat', true);
         httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         httpRequest.send('chatText=' + encodeURIComponent(chatText));
-        httpRequest.send();
     }
 
-    function alertContents() {
+    function updateChat() {
         if (httpRequest.readyState === XMLHttpRequest.DONE) {
             if (httpRequest.status === 200) {
-                alert(httpRequest.responseText);
+
+                var li = document.createElement("li");
+                var content = document.createElement('div');
+                content.setAttribute('class', 'content');
+                li.appendChild(content);
+                var message = document.createElement('div');
+                message.setAttribute('class',  'message');
+                content.appendChild(message);
+                var bubble = document.createElement('div');
+                bubble.setAttribute('class', 'bubble');
+                message.appendChild(bubble);
+                var p = document.createElement('p');
+                p.textContent = chatText.value;
+                bubble.appendChild(p);
+
+                chatWindow.appendChild(li);
+
+                var responseTextList = JSON.parse(httpRequest.responseText);
+                responseTextList.forEach(
+                    function (item, index) {
+                        li = document.createElement("li");
+                        content = document.createElement('div');
+                        content.setAttribute('class', 'content');
+                        li.appendChild(content);
+                        message = document.createElement('div');
+                        message.setAttribute('class',  'message');
+                        content.appendChild(message);
+                        bubble = document.createElement('div');
+                        bubble.setAttribute('class', 'bubble');
+                        message.appendChild(bubble);
+                        p = document.createElement('p');
+                        p.textContent = item.response;
+                        bubble.appendChild(p);
+                        chatWindow.appendChild(li);
+
+                    //console.log(item, index);
+                });
             } else {
                 alert('There was a problem with the request.');
             }
         }
     }
-})();
 
-//
-// document.getElementById("sendText").onclick = function() {
-//     var chatText = document.getElementById("chatText").value;
-//     chat(chatText);
-// };
-//
-// function chat() {
-//     httpRequest = new XMLHttpRequest();
-//
-//
-//
-//     $.ajax({
-//         type: 'POST',
-//         url: '/chat',
-//         data: $('#chatForm').serialize(), //JSON.stringify({text: text}),
-//         success: function (data) {
-//             alert('data: ' + data);
-//         },
-//         contentType: "application/json",
-//         dataType: 'json'
-//     });
-// }
-//
-// // $(document).ready(function() {
-// //     // document.getElementById("sendText").onclick = function () {
-// //     //     var text = document.getElementById("chatText").value;
-// //     //     chat(text);
-// //     // };
-// //
-// //     $('#sendText').click(function (event) {
-// //         $.post('/chat', $('#chatForm').serialize(),
-// //             function (data) {
-// //                 alert('data: ' + data);
-// //                 //$('.success_msg').append("Vote Successfully Recorded").fadeOut();
-// //             }
-// //         );
-// //         event.preventDefault();
-// //     });
-// //
-// //         // $.ajax({
-// //         //     type: 'POST',
-// //         //     url: '/chat',
-// //         //     data: $('#chatForm').serialize(), //JSON.stringify({text: text}),
-// //         //     success: function (data) {
-// //         //         alert('data: ' + data);
-// //         //     },
-// //         //     contentType: "application/json",
-// //         //     dataType: 'json'
-// //         // });
-// //
-// //     //})
-// //
-// //     // function chat() {
-// //     //     $.ajax({
-// //     //         type: 'POST',
-// //     //         url: '/chat',
-// //     //         data: $('#chatForm').serialize(), //JSON.stringify({text: text}),
-// //     //         success: function (data) {
-// //     //             alert('data: ' + data);
-// //     //         },
-// //     //         contentType: "application/json",
-// //     //         dataType: 'json'
-// //     //     });
-// //     // }
-// // });
+})();
