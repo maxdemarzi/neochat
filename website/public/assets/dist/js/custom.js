@@ -26,6 +26,7 @@
             if (httpRequest.status === 200) {
 
                 var li = document.createElement("li");
+                li.setAttribute('class', 'left');
                 var content = document.createElement('div');
                 content.setAttribute('class', 'content');
                 li.appendChild(content);

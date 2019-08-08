@@ -1,0 +1,33 @@
+.chat .item .middle ul li.left {
+    -ms-flex-pack: justify;
+    justify-content: flex-start;
+    text-align: left;
+}
+.chat .item .middle ul li.left img {
+    margin-right: 15px;
+    margin-left: 0;
+    -ms-flex-order: 1;
+    order: 1;
+}
+.chat .item .middle ul li.left .content {
+    -ms-flex-order: 2;
+    order: 2;
+}
+.chat .item .middle ul li.left .bubble {
+    background: #f5f5f5;
+}
+.chat .item .middle ul li.left p {
+    color: #bdbac2;
+}
+.chat .item .middle ul li.left .attachment .round {
+    background: #3399cc;
+}
+.chat .item .middle ul li.left .attachment .round .eva {
+    fill: #fff;
+}
+.chat .item .middle ul li.left  .attachment h5 {
+    color: #3399cc;
+}
+.chat .item .middle ul li.left .attachment span {
+    color: #bdbac2;
+}
