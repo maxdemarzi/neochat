@@ -119,6 +119,9 @@
                 <groupId>com.fizzed</groupId>
                 <artifactId>rocker-maven-plugin</artifactId>
                 <version>1.2.1</version>
+                <configuration>
+                    <templateDirectory>public</templateDirectory>
+                </configuration>
                 <executions>
                     <execution>
                         <id>generate-rocker-templates</id>
@@ -127,7 +130,6 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <templateDirectory>public</templateDirectory>
                             <touchFile>pom.xml</touchFile>
                             <optimize>false</optimize>
                         </configuration>

@@ -7,15 +7,26 @@ import java.util.*;
 
 public interface CypherQueries {
 
-    final String getUser = "MATCH (u:User) WHERE u.username = {username} RETURN u";
-    final String authorizeUser = "MATCH (u:User) WHERE u.token = {token} RETURN u";
-    final String tokenizeUser = "MATCH (u:User) WHERE u.username = {username} SET u.token = u.username + toString(rand()) RETURN u.token AS token";
-    final String createUser = "CREATE (u:User {username: {username}, email: {email}, password: {password} }) RETURN u";
+    final String getUser = "MATCH (u:Account) WHERE u.id = {id} RETURN u";
+    final String authorizeUser = "MATCH (u:Account) WHERE u.token = {token} RETURN u";
+    final String tokenizeUser = "MATCH (u:Account) WHERE u.id = {id} SET u.token = u.id + toString(rand()) RETURN u.token AS token";
+    final String createUser = "CREATE (u:Account {id: {id}, email: {email}, password: {password} })-[:HAS_MEMBER]->(member:Member) RETURN u";
+    final String chat = "CALL com.maxdemarzi.chat({id}, {text})";
 
-    static Map<String, Object> CreateUser(Driver driver, String username, String email, String password) {
+    static List<Map<String, Object>> Chat(Driver driver, String id, String text) {
+        return Iterators.asList(
+            query(driver, chat, new HashMap<String, Object>() {{
+                put("id", id);
+                put("text", text);
+            }})
+        );
+    }
+
+
+    static Map<String, Object> CreateUser(Driver driver, String id, String email, String password) {
         Map<String, Object> response = Iterators.singleOrNull(query(driver, createUser,
                 new HashMap<String, Object>() {{
-                    put("username", username);
+                    put("id", id);
                     put("email", email);
                     put("password", password); }}
             ));
@@ -26,8 +37,8 @@ public interface CypherQueries {
         return null;
     }
 
-    static Map<String, Object> GetUser(Driver driver, String username) {
-        Map<String, Object> response = Iterators.singleOrNull(query(driver, getUser, new HashMap<String, Object>() {{ put("username", username); }} ));
+    static Map<String, Object> GetUser(Driver driver, String id) {
+        Map<String, Object> response = Iterators.singleOrNull(query(driver, getUser, new HashMap<String, Object>() {{ put("id", id); }} ));
         if (response != null) {
             return (Map<String, Object>) response.get("u");
         }
@@ -42,8 +53,8 @@ public interface CypherQueries {
         return null;
     }
 
-    static String TokenizeUser(Driver driver, String username) {
-        Map<String, Object> response = Iterators.singleOrNull(query(driver, tokenizeUser, new HashMap<String, Object>() {{ put("username", username); }} ));
+    static String TokenizeUser(Driver driver, String id) {
+        Map<String, Object> response = Iterators.singleOrNull(query(driver, tokenizeUser, new HashMap<String, Object>() {{ put("id", id); }} ));
         return response.getOrDefault("token", null).toString();
     }
 

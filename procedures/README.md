@@ -1,5 +1,5 @@
-# Shadowbot Procedures
-POC Procedures for Chat Bot Application
+# NeoChat Procedures
+Procedures for Neo4j Based Chat Bot Application
 
 Instructions
 ------------ 
@@ -23,8 +23,17 @@ Restart your Neo4j Server.
 
 Create the Schema by running this stored procedure:
 
-    CALL com.maxdemarzi.schema.generate
+    CALL com.maxdemarzi.schema.generate();
+    
+Create some seed data:
+    
+    CALL com.maxdemarzi.seed.decisions();
+    CALL com.maxdemarzi.seed.intents();
+    
+Train the models:
 
+    CALL com.maxdemarzi.train(model_directory, intents_directory);
+    CALL com.maxdemarzi.train("/Users/maxdemarzi/Documents/Projects/shadowbot/procedures/src/main/resources/data/models/", "/Users/maxdemarzi/Documents/Projects/shadowbot/procedures/src/main/resources/data/training/intents")
     
 
 Models

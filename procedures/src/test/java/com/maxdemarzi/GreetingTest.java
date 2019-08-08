@@ -1,6 +1,7 @@
 package com.maxdemarzi;
 
 import com.maxdemarzi.seed.Decisions;
+import com.maxdemarzi.seed.Intents;
 import org.junit.jupiter.api.*;
 import org.neo4j.driver.v1.*;
 import org.neo4j.harness.ServerControls;
@@ -18,6 +19,7 @@ public class GreetingTest {
         neo4j = TestServerBuilders.newInProcessBuilder()
                 .withProcedure(Procedures.class)
                 .withProcedure(Decisions.class)
+                .withProcedure(Intents.class)
                 .withFixture(MODEL_STATEMENT)
                 .newServer();
     }
@@ -40,6 +42,7 @@ public class GreetingTest {
 
             // When I use the procedure
             session.run( "CALL com.maxdemarzi.seed.decisions()");
+            session.run( "CALL com.maxdemarzi.seed.intents()");
             session.run( "CALL com.maxdemarzi.train" );
             StatementResult result = session.run( "CALL com.maxdemarzi.intents($text)",
                     parameters( "text", "Hello?" ) );
@@ -65,19 +68,10 @@ public class GreetingTest {
 
     private static final String MODEL_STATEMENT =
             "CREATE (a1:Account {id:'a1'})" +
-            "CREATE (m1:Member {username:'maxdemarzi', name:'Max'})" +
+            "CREATE (m1:Member {name:'Max'})" +
             "CREATE (a1)-[:HAS_MEMBER]->(m1)" +
             "CREATE (a2:Account {id:'a2'})" +
-            "CREATE (m2:Member {username:'nobody'})" +
-            "CREATE (a2)-[:HAS_MEMBER]->(m2)" +
-            "CREATE (i1:Intent {id:'greeting'})" +
-            "CREATE (i1r1:Response {text:'Hi $name!', parameter_names:['name']})" +
-            "CREATE (i1r2:Response {text:'Hello $name!', parameter_names:['name']})" +
-            "CREATE (i1r3:Response {text:'Hello there!', parameter_names:[]})" +
-            "CREATE (i1r4:Response {text:'Hiya!', parameter_names:[]})" +
-            "CREATE (i1)-[:HAS_RESPONSE]->(i1r1)" +
-            "CREATE (i1)-[:HAS_RESPONSE]->(i1r2)" +
-            "CREATE (i1)-[:HAS_RESPONSE]->(i1r3)" +
-            "CREATE (i1)-[:HAS_RESPONSE]->(i1r4)"
+            "CREATE (m2:Member)" +
+            "CREATE (a2)-[:HAS_MEMBER]->(m2)"
             ;
 }

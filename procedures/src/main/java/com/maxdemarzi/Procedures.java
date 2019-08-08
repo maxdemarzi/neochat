@@ -156,33 +156,79 @@ public class Procedures {
     }
 
     @Procedure(name = "com.maxdemarzi.train", mode = Mode.READ)
-    @Description("CALL com.maxdemarzi.train()")
-    public Stream<StringResult> train() {
+    @Description("CALL com.maxdemarzi.train(model_directory, intents_directory)")
+    public Stream<StringResult> train(@Name(value = "model_directory", defaultValue = "") String modelDirectory,
+                                      @Name(value = "intents_directory", defaultValue = "") String intentsDirectory) {
         try {
-            ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+
+            String token;
+            String sent;
+            String maxent;
+            String lemma;
+            String date;
+            String money;
+            String person;
+
+            if (modelDirectory.isEmpty()) {
+                ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+                token = classLoader.getResource("data/models/en-token.bin").getFile();
+                sent =  classLoader.getResource("data/models/en-sent.bin").getFile();
+                maxent = classLoader.getResource("data/models/en-pos-maxent.bin").getFile();
+                lemma = classLoader.getResource("data/models/en-lemmatizer.bin").getFile();
+                date = classLoader.getResource("data/models/en-ner-date.bin").getFile();
+                money = classLoader.getResource("data/models/en-ner-money.bin").getFile();
+                person = classLoader.getResource("data/models/en-ner-person.bin").getFile();
+            } else {
+                token = modelDirectory + "en-token.bin";
+                sent = modelDirectory + "en-sent.bin";
+                maxent = modelDirectory + "en-pos-maxent.bin";
+                lemma = modelDirectory + "en-lemmatizer.bin";
+                date = modelDirectory + "en-ner-date.bin";
+                money = modelDirectory + "en-ner-money.bin";
+                person = modelDirectory + "en-ner-person.bin";
+            }
+
+            if (intentsDirectory.isEmpty()) {
+                ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+                intentsDirectory = classLoader.getResource("data/training/intents").getFile();
+            }
+
+            log.info("Token Model: " + token );
+            log.info("Sentences Model: " + sent );
+            log.info("POS Model: " + maxent );
+            log.info("Lemmatizer Model: " + lemma );
+            log.info("Date Model: " + date );
+            log.info("Money Model: " + money );
+            log.info("Person Model: " + person );
+
+            log.info("Intents Directory: " + intentsDirectory);
 
             // Initialize the tokenizer
-            InputStream modelIn = new FileInputStream(classLoader.getResource("data/models/en-token.bin").getFile());
+            InputStream modelIn = new FileInputStream(token);
             TokenizerModel model = new TokenizerModel(modelIn);
             tokenizer = new TokenizerME(model);
+            log.info("Initialized the tokenizer");
 
             // Initialize the sentencizer
-            modelIn =  new FileInputStream(classLoader.getResource("data/models/en-sent.bin").getFile());
+            modelIn =  new FileInputStream(sent);
             SentenceModel sentenceModel = new SentenceModel(modelIn);
             sentencizer = new SentenceDetectorME(sentenceModel);
+            log.info("Initialized the sentencizer");
 
-            // Initialieze the partOfSpeecher
-            modelIn =  new FileInputStream(classLoader.getResource("data/models/en-pos-maxent.bin").getFile());
+            // Initialize the partOfSpeecher
+            modelIn =  new FileInputStream(maxent);
             POSModel posModel = new POSModel(modelIn);
             partOfSpeecher = new POSTaggerME(posModel);
+            log.info("Initialized the partOfSpeecher");
 
             // Initialize the lemmatizer
-            modelIn =  new FileInputStream(classLoader.getResource("data/models/en-lemmatizer.bin").getFile());
+            modelIn =  new FileInputStream(lemma);
             LemmatizerModel lemmaModel = new LemmatizerModel(modelIn);
             lemmatizer = new LemmatizerME(lemmaModel);
+            log.info("Initialized the lemmatizer");
 
             // Gather the Intents
-            File trainingDirectory = new File(classLoader.getResource("data/training/intents").getFile());
+            File trainingDirectory = new File(intentsDirectory);
 
             List<ObjectStream<DocumentSample>> categoryStreams = new ArrayList<>();
             for (File trainingFile : trainingDirectory.listFiles()) {
@@ -196,6 +242,7 @@ public class Procedures {
             }
 
             ObjectStream<DocumentSample> combinedDocumentSampleStream = ObjectStreamUtils.concatenateObjectStream(categoryStreams);
+            log.info("Combined Intent streams");
 
             TrainingParameters trainingParams = new TrainingParameters();
             trainingParams.put(TrainingParameters.CUTOFF_PARAM, 0);
@@ -205,6 +252,7 @@ public class Procedures {
             DoccatModel doccatModel = DocumentCategorizerME.train("en", combinedDocumentSampleStream, trainingParams, factory);
             combinedDocumentSampleStream.close();
             categorizer = new DocumentCategorizerME(doccatModel);
+            log.info("Initialized the categorizer");
 
             // Initialize TokenFinders
             tokenNameFinderModels = new ArrayList<>();
@@ -245,25 +293,31 @@ public class Procedures {
             for (TokenNameFinderModel tokenNameFinderModel : tokenNameFinderModels) {
                 nameFinderMEs.add(new NameFinderME(tokenNameFinderModel));
             }
+            log.info("Initialized the token finders");
 
             // Add date NER model
-            modelIn = new FileInputStream(classLoader.getResource("data/models/en-ner-date.bin").getFile());
+            modelIn = new FileInputStream(date);
             TokenNameFinderModel dateModel = new TokenNameFinderModel(modelIn);
             nameFinderMEs.add(new NameFinderME(dateModel));
+            log.info("Initialized the date finder");
 
             // Add money NER model
-            modelIn = new FileInputStream(classLoader.getResource("data/models/en-ner-money.bin").getFile());
+            modelIn = new FileInputStream(money);
             TokenNameFinderModel moneyModel = new TokenNameFinderModel(modelIn);
             nameFinderMEs.add(new NameFinderME(moneyModel));
+            log.info("Initialized the money finder");
 
             // Add person NER model
-            modelIn = new FileInputStream(classLoader.getResource("data/models/en-ner-person.bin").getFile());
+            modelIn = new FileInputStream(person);
             TokenNameFinderModel personModel = new TokenNameFinderModel(modelIn);
             nameFinderMEs.add(new NameFinderME(personModel));
+            log.info("Initialized the person finder");
 
         } catch (IOException e) {
             e.printStackTrace();
+            log.error(e.getMessage());
         }
+        log.info("Training Complete!");
         return Stream.of(new StringResult("Training Complete!"));
     }
 

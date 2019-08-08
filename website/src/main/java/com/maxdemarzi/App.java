@@ -10,8 +10,7 @@ import org.neo4j.driver.v1.Driver;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 public class App extends Jooby {
 
@@ -43,20 +42,20 @@ public class App extends Jooby {
         get("/register", ctx -> views.register.template());
         post("/register", ctx -> {
             Formdata form = ctx.form();
-            String username = form.get("username").toOptional().orElse("");
+            String id = form.get("id").toOptional().orElse("");
             String email = form.get("email").toOptional().orElse("");
             String password = form.get("password").toOptional().orElse("");
             password = BCrypt.hashpw(password, BCrypt.gensalt());
             Driver driver = require(Driver.class);
-            Map<String, Object> user = CypherQueries.CreateUser(driver, username, email, password);
+            Map<String, Object> user = CypherQueries.CreateUser(driver, id, email, password);
             if (user != null) {
-                String token = CypherQueries.TokenizeUser(driver, username);
+                String token = CypherQueries.TokenizeUser(driver, id);
                 if (token != null) {
                     // Set a token cookie for 2 hours
                     ctx.setResponseCookie(new Cookie("token", token).setMaxAge(7200));
-                    ctx.session().put("username", (String)user.get("username"));
+                    ctx.session().put("id", (String)user.get("id"));
                     ctx.session().put("email", (String)user.get("email"));
-                    return views.home.template((String)user.get("username"));
+                    return views.home.template((String)user.get("id"));
                 }
             }
             return views.register.template();
@@ -65,18 +64,18 @@ public class App extends Jooby {
         get("/signin", ctx -> views.signin.template());
         post("/signin", ctx -> {
             Formdata form = ctx.form();
-            String username = form.get("username").toOptional().orElse("");
+            String id = form.get("id").toOptional().orElse("");
             String password = form.get("password").toOptional().orElse("");
             Driver driver = require(Driver.class);
-            Map<String, Object> user = CypherQueries.GetUser(driver, username);
+            Map<String, Object> user = CypherQueries.GetUser(driver, id);
             if (user != null && BCrypt.checkpw(password, (String) user.get("password"))) {
-                String token = CypherQueries.TokenizeUser(driver, username);
+                String token = CypherQueries.TokenizeUser(driver, id);
                 if (token != null) {
                     // Set a token cookie for 2 hours
                     ctx.setResponseCookie(new Cookie("token", token).setMaxAge(7200));
-                    ctx.session().put("username", (String)user.get("username"));
+                    ctx.session().put("id", (String)user.get("id"));
                     ctx.session().put("email", (String)user.get("email"));
-                    return views.home.template(username);
+                    return views.home.template(id);
                 }
             }
             return views.signin.template();
@@ -84,8 +83,8 @@ public class App extends Jooby {
 
         // Private pages - Sign in required for anything below this line
         decorator(next -> ctx -> {
-            // If they have a username in this session, pass through
-            if (ctx.session().get("username").valueOrNull() != null) {
+            // If they have a id in this session, pass through
+            if (ctx.session().get("id").valueOrNull() != null) {
                 return next.apply(ctx);
             }
             // If they have a token, check it, set the session and pass through
@@ -94,7 +93,7 @@ public class App extends Jooby {
                 Driver driver = require(Driver.class);
                 Map<String, Object> user = CypherQueries.AuthorizeUser(driver, token);
                 if (user != null) {
-                    ctx.session().put("username", (String)user.get("username"));
+                    ctx.session().put("id", (String)user.get("id"));
                     ctx.session().put("email", (String)user.get("email"));
                     return next.apply(ctx);
                 }
@@ -105,8 +104,8 @@ public class App extends Jooby {
         });
 
         get("/home", ctx -> {
-            String username = ctx.session().get("username").value();
-            return views.home.template(username);
+            String id = ctx.session().get("id").value();
+            return views.home.template(id);
         });
 
         get("/signout", ctx -> {
@@ -114,6 +113,16 @@ public class App extends Jooby {
             ctx.setResponseCookie(new Cookie("token").setMaxAge(0));
             return ctx.sendRedirect("/");
         });
+
+        post("/chat", ctx -> {
+            String id = ctx.session().get("id").value();
+            Formdata form = ctx.form();
+            String chatText = form.get("chatText").toOptional().orElse("");
+            Driver driver = require(Driver.class);
+            List<Map<String, Object>> response = CypherQueries.Chat(driver, id, chatText);
+            return response;
+        });
+
     }
 
     public static void main(String[] args) {
