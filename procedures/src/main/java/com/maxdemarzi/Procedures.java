@@ -21,10 +21,12 @@ import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
 import java.io.*;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
 import static com.maxdemarzi.schema.Properties.*;
+import static com.maxdemarzi.schema.RelationshipTypes.PREV_MESSAGE;
 
 public class Procedures {
 
@@ -54,14 +56,30 @@ public class Procedures {
         findIntents(text, results);
 
         Node account = db.findNode(Labels.Account, ID, id);
+        Node last;
+        if (account.hasRelationship(Direction.OUTGOING, PREV_MESSAGE)) {
+            Relationship prev = account.getSingleRelationship(PREV_MESSAGE, Direction.OUTGOING);
+            prev.delete();
+            last = prev.getEndNode();
+        } else {
+            last = account;
+        }
 
+        Node next = db.createNode(Labels.Message);
+        next.setProperty(TEXT, text);
+        next.setProperty(DATE, ZonedDateTime.now());
+
+        account.createRelationshipTo(next, PREV_MESSAGE);
+        next.createRelationshipTo(last, PREV_MESSAGE);
+
+        // Get the Responses
         for (IntentResult result : results) {
             switch (result.intent) {
                 case "greeting":
-                    greetingAction(account, result);
+                    greetingResponse(account, result, next);
                     break;
                 case "complete":
-                    completeAction(account, result);
+                    completeResponse(account, result, next);
                     break;
             }
         }
@@ -69,10 +87,10 @@ public class Procedures {
         return results.stream();
     }
 
-    private void completeAction(Node account, IntentResult result) {
+    private void completeResponse(Node account, IntentResult result, Node next) {
     }
 
-    private void greetingAction(Node account, IntentResult result) {
+    private void greetingResponse(Node account, IntentResult result, Node next) {
         // Which Decision Tree are we interested in?
         Node tree = db.findNode(Labels.Tree, ID, result.intent);
         if ( tree != null) {
@@ -101,6 +119,23 @@ public class Procedures {
             }
 
             result.setResponse(response);
+
+            // Update Graph
+            next.setProperty(INTENT, result.intent);
+            next.setProperty(TEXT, result.response);
+
+            // Store Args in [type, value, type, value]
+            String[] args = new String[2 * result.args.size()];
+            int index = 0;
+            for(Map<String, Object> map : result.args) {
+                for (Map.Entry<String, Object> mapEntry : map.entrySet()) {
+                    args[index] = mapEntry.getKey();
+                    index++;
+                    args[index] = mapEntry.getValue().toString();
+                    index++;
+                }
+            }
+            next.setProperty(ARGS, args);
         }
 
     }

@@ -8,6 +8,7 @@ public enum Labels implements Label {
     Action,
     Category,
     Member,
+    Message,
     Parameter,
     Rule,
     Tree

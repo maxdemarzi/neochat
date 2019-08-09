@@ -8,5 +8,6 @@ public enum RelationshipTypes implements RelationshipType {
     HAS_MEMBER,
     HAS_RESPONSE,
     IN_CATEGORY,
+    PREV_MESSAGE,
     REQUIRES
 }

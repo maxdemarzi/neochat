@@ -1,6 +1,7 @@
 (function() {
     var httpRequest;
     var chatWindow = document.getElementById("chatWindow");
+    var objDiv = document.getElementById("scroll");
     var sendText = document.getElementById("sendText").onclick = function(evt) {
         var chatText = document.getElementById("chatText").value;
         makeRequest(chatText);
@@ -59,12 +60,11 @@
                         p.textContent = item.response;
                         bubble.appendChild(p);
                         chatWindow.appendChild(li);
-
-                    //console.log(item, index);
                 });
             } else {
                 alert('There was a problem with the request.');
             }
+            objDiv.scrollTop = objDiv.scrollHeight;
         }
     }
 
