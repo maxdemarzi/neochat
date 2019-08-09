@@ -16,7 +16,8 @@ public class App extends Jooby {
 
     {
 
-        install(new Neo4jModule());
+        install(new Neo4jExtension());
+        install(new FullContactExtension());
         install(new RockerModule());
 
         RockerRuntime.getInstance().setReloading(true);
@@ -25,6 +26,7 @@ public class App extends Jooby {
         ObjectMapper mapper = require(ObjectMapper.class);
         mapper.setTimeZone(TimeZone.getTimeZone("UTC"));
 
+        EnrichmentJob enrichmentJob = new EnrichmentJob(require(Driver.class), require(FullContactAPI.class));
 
         // Configure public static files
         Path assets = Paths.get("public/assets");
@@ -43,18 +45,22 @@ public class App extends Jooby {
         post("/register", ctx -> {
             Formdata form = ctx.form();
             String id = form.get("id").toOptional().orElse("");
-            String email = form.get("email").toOptional().orElse("");
             String password = form.get("password").toOptional().orElse("");
+            String phone = form.get("phone").toOptional().orElse("");
             password = BCrypt.hashpw(password, BCrypt.gensalt());
             Driver driver = require(Driver.class);
-            Map<String, Object> user = CypherQueries.CreateUser(driver, id, email, password);
+            Map<String, Object> user = CypherQueries.CreateUser(driver, id, password, phone);
             if (user != null) {
                 String token = CypherQueries.TokenizeUser(driver, id);
                 if (token != null) {
                     // Set a token cookie for 2 hours
                     ctx.setResponseCookie(new Cookie("token", token).setMaxAge(7200));
                     ctx.session().put("id", (String)user.get("id"));
-                    ctx.session().put("email", (String)user.get("email"));
+                    // Kick off enrichment job
+                    enrichmentJob.queue.add(new HashMap<String, Object>() {{
+                        put("email", id);
+                        put("phone", phone);
+                    }});
                     return views.home.template((String)user.get("id"));
                 }
             }
@@ -74,7 +80,6 @@ public class App extends Jooby {
                     // Set a token cookie for 2 hours
                     ctx.setResponseCookie(new Cookie("token", token).setMaxAge(7200));
                     ctx.session().put("id", (String)user.get("id"));
-                    ctx.session().put("email", (String)user.get("email"));
                     return views.home.template(id);
                 }
             }
@@ -94,7 +99,6 @@ public class App extends Jooby {
                 Map<String, Object> user = CypherQueries.AuthorizeUser(driver, token);
                 if (user != null) {
                     ctx.session().put("id", (String)user.get("id"));
-                    ctx.session().put("email", (String)user.get("email"));
                     return next.apply(ctx);
                 }
             }

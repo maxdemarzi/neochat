@@ -7,8 +7,7 @@ import org.neo4j.procedure.*;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import static com.maxdemarzi.schema.Properties.ID;
-import static com.maxdemarzi.schema.Properties.NAME;
+import static com.maxdemarzi.schema.Properties.*;
 
 public class Schema {
 
@@ -42,6 +41,12 @@ public class Schema {
         if (!schema.getConstraints(Labels.Category).iterator().hasNext()) {
             schema.constraintFor(Labels.Category)
                     .assertPropertyIsUnique(NAME)
+                    .create();
+        }
+
+        if (!schema.getConstraints(Labels.Member).iterator().hasNext()) {
+            schema.indexFor(Labels.Member)
+                    .on(PHONE)
                     .create();
         }
 

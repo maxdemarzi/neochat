@@ -49,7 +49,7 @@ public class Procedures {
     private static List<NameFinderME> nameFinderMEs;
 
 
-    @Procedure(name = "com.maxdemarzi.chat", mode = Mode.READ)
+    @Procedure(name = "com.maxdemarzi.chat", mode = Mode.WRITE)
     @Description("CALL com.maxdemarzi.chat(String id, String text)")
     public Stream<IntentResult> chat(@Name(value = "id") String id, @Name(value = "text") String text) {
         ArrayList<IntentResult> results = new ArrayList<>();

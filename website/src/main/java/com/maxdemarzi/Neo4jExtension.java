@@ -6,7 +6,7 @@ import org.neo4j.driver.v1.*;
 
 import javax.annotation.Nonnull;
 
-public class Neo4jModule implements Extension {
+public class Neo4jExtension implements Extension {
 
     @Override
     public void install(@Nonnull Jooby application) throws Exception {

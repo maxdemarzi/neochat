@@ -7,6 +7,10 @@ Instructions
 Make sure Neo4j is already running first. 
 Set the Neo4j uri, username and password in the conf/application.conf file.
 
+Get a Key from [FullContact](https://www.fullcontact.com/) and set it in the conf/application.conf file.
+
+fullcontact.key="yourfullcontactkey"
+
 To compile:
 
     mvn jooby:run

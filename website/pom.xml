@@ -21,8 +21,9 @@
         <rocker.version>1.2.1</rocker.version>
         <neo4j.driver.version>1.7.5</neo4j.driver.version>
         <neo4j.version>3.5.8</neo4j.version>
-        <pac4j.version>3.7.0</pac4j.version>
         <bcrypt.version>0.4</bcrypt.version>
+        <retrofit.version>2.6.1</retrofit.version>
+        <guava.version>28.0-jre</guava.version>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -82,17 +83,24 @@
             <version>${bcrypt.version}</version>
         </dependency>
 
-        <!-- Pac4j -->
+        <!-- Retrofit -->
         <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-            <version>${pac4j.version}</version>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>retrofit</artifactId>
+            <version>${retrofit.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-http</artifactId>
-            <version>${pac4j.version}</version>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>converter-jackson</artifactId>
+            <version>${retrofit.version}</version>
+        </dependency>
+
+        <!-- Guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
 
     </dependencies>
