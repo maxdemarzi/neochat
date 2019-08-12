@@ -10,7 +10,7 @@ import org.neo4j.harness.TestServerBuilders;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.neo4j.driver.v1.Values.parameters;
 
-public class GreetingTest {
+public class CompleteTest {
 
     private static ServerControls neo4j;
 
@@ -30,7 +30,7 @@ public class GreetingTest {
     }
 
     @Test
-    void shouldGreet()
+    void shouldComplete()
     {
         // In a try-block, to make sure we close the driver after the test
         try( Driver driver = GraphDatabase.driver( neo4j.boltURI() , Config.build().withoutEncryption().toConfig() ) )
@@ -45,23 +45,23 @@ public class GreetingTest {
             session.run( "CALL com.maxdemarzi.seed.intents()");
             session.run( "CALL com.maxdemarzi.train" );
             StatementResult result = session.run( "CALL com.maxdemarzi.intents($text)",
-                    parameters( "text", "Hello?" ) );
+                    parameters( "text", "Bye" ) );
 
             // Then I should get what I expect
-            assertThat(result.single().get("intent").asString()).isEqualTo("greeting");
+            assertThat(result.single().get("intent").asString()).isEqualTo("complete");
 
             result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
-                    parameters( "id", "a1" ,"text", "Hello?" ) );
+                    parameters( "id", "a1" ,"text", "Bye" ) );
 
             Record record = result.single();
-            assertThat(record.get("intent").asString()).isEqualTo("greeting");
-            assertThat(record.get("response").asString()).endsWith("Max De Marzi!");
+            assertThat(record.get("intent").asString()).isEqualTo("complete");
+            assertThat(record.get("response").asString()).contains("Max De Marzi!");
 
             result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
-                    parameters( "id", "a2" ,"text", "Hello?" ) );
+                    parameters( "id", "a2" ,"text", "Thanks" ) );
 
              record = result.single();
-            assertThat(record.get("intent").asString()).isEqualTo("greeting");
+            assertThat(record.get("intent").asString()).isEqualTo("complete");
             assertThat(record.get("response").asString()).doesNotContain("Max");
         }
     }

@@ -40,6 +40,11 @@ public class EnrichmentJob extends AbstractScheduledService {
 
             if (fcResponse.isSuccessful()) {
                 Map<String, Object> properties = (Map<String, Object>) fcResponse.body();
+                if (properties != null) {
+                    properties.values().removeIf(Objects::isNull);
+                    properties.remove("details");
+                    properties.remove("dataAddOns");
+                }
                 CypherQueries.EnrichUser(driver, (String)map.get("email"), (String)map.get("phone"), properties);
             }
         }

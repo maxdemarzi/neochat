@@ -25,7 +25,7 @@ public class Intents {
     @Description("CALL com.maxdemarzi.seed.intents()")
     public Stream<StringResult> seedIntents() {
 
-        String intent =
+        String greeting =
                 "CREATE (i1:Intent {id:'greeting'})" +
                 "CREATE (i1r1:Response {text:'Hi $name!', parameter_names:['name']})" +
                 "CREATE (i1r2:Response {text:'Hello $name!', parameter_names:['name']})" +
@@ -36,6 +36,25 @@ public class Intents {
                 "CREATE (i1)-[:HAS_RESPONSE]->(i1r3)" +
                 "CREATE (i1)-[:HAS_RESPONSE]->(i1r4)";
 
+        executeCypher(greeting);
+
+        String complete =
+                "CREATE (i1:Intent {id:'complete'})" +
+                "CREATE (i1r1:Response {text:'Bye $name. Have a good $time_of_day!', parameter_names:['name', 'time_of_day']})" +
+                "CREATE (i1r2:Response {text:'Bye Bye $name! Have an awesome $time_of_day', parameter_names:['name', 'time_of_day']})" +
+                "CREATE (i1r3:Response {text:'Until next time! Have a great $time_of_day', parameter_names:['time_of_day']})" +
+                "CREATE (i1r4:Response {text:'Have a good one! Have an execlent $time_of_day', parameter_names:['time_of_day']})" +
+                "CREATE (i1)-[:HAS_RESPONSE]->(i1r1)" +
+                "CREATE (i1)-[:HAS_RESPONSE]->(i1r2)" +
+                "CREATE (i1)-[:HAS_RESPONSE]->(i1r3)" +
+                "CREATE (i1)-[:HAS_RESPONSE]->(i1r4)";
+
+        executeCypher(complete);
+
+        return Stream.of(new StringResult("Seeded Intents"));
+    }
+
+    private void executeCypher(String intent) {
         try ( Result result = db.execute( intent ) ) {
             while ( result.hasNext() )
             {
@@ -45,7 +64,5 @@ public class Intents {
                 }
             }
         }
-
-        return Stream.of(new StringResult("Seeded Intents"));
     }
 }

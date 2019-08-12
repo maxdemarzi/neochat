@@ -2,6 +2,7 @@ package com.maxdemarzi;
 
 import com.maxdemarzi.decisions.DecisionTreeEvaluator;
 import com.maxdemarzi.decisions.DecisionTreeExpander;
+import com.maxdemarzi.facts.TimeOfDay;
 import com.maxdemarzi.results.IntentResult;
 import com.maxdemarzi.results.StringResult;
 import com.maxdemarzi.schema.Labels;
@@ -21,6 +22,7 @@ import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
 import java.io.*;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Stream;
@@ -74,32 +76,18 @@ public class Procedures {
 
         // Get the Responses
         for (IntentResult result : results) {
-            switch (result.intent) {
-                case "greeting":
-                    greetingResponse(account, result, next);
-                    break;
-                case "complete":
-                    completeResponse(account, result, next);
-                    break;
-            }
+            respond(account, result, next);
         }
-
         return results.stream();
     }
 
-    private void completeResponse(Node account, IntentResult result, Node next) {
-    }
-
-    private void greetingResponse(Node account, IntentResult result, Node next) {
+    private void respond(Node account, IntentResult result, Node next) {
         // Which Decision Tree are we interested in?
         Node tree = db.findNode(Labels.Tree, ID, result.intent);
         if ( tree != null) {
             // Find the facts
-            Map<String, Object> facts = new HashMap<>();
-            facts.put("account_node_id", account.getId());
-            Result factResult = db.execute("MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE ID(a) = $account_node_id RETURN 'name' AS key, COALESCE(member.name, '') AS value", facts);
-            Map<String, Object> factMap = factResult.next();
-            facts.put((String)factMap.get("key"), factMap.get("value"));
+            Map<String, Object> facts = getMemberFacts(account);
+            getTimeFacts(facts);
 
             Stream<Path> paths = decisionPath(tree, facts);
             Path path = paths.findFirst().get();
@@ -113,6 +101,7 @@ public class Procedures {
                 }
             }
 
+            // Fill in facts
             for (Map.Entry<String, Object> entry : facts.entrySet()) {
                 String key = "\\$" + entry.getKey();
                 response = response.replaceAll(key, entry.getValue().toString() );
@@ -138,6 +127,19 @@ public class Procedures {
             next.setProperty(ARGS, args);
         }
 
+    }
+
+    private void getTimeFacts(Map<String, Object> facts) {
+        facts.put("time_of_day", new TimeOfDay(LocalTime.now()).getTimeOfDay());
+    }
+
+    private Map<String, Object> getMemberFacts(Node account) {
+        Map<String, Object> facts = new HashMap<>();
+        facts.put("account_node_id", account.getId());
+        Result factResult = db.execute("MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE ID(a) = $account_node_id RETURN 'name' AS key, COALESCE(member.fullName, '') AS value", facts);
+        Map<String, Object> factMap = factResult.next();
+        facts.put((String)factMap.get("key"), factMap.get("value"));
+        return facts;
     }
 
     private Stream<Path> decisionPath(Node tree, Map<String, Object> facts) {

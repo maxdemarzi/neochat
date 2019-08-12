@@ -35,7 +35,26 @@ public class Decisions {
                 "CREATE (name_blank_rule)-[:IS_TRUE]->(answer_yes)" +
                 "CREATE (name_blank_rule)-[:IS_FALSE]->(answer_no)" +
                 "RETURN 'greeting tree created' AS message";
-        try ( Result result = db.execute( greetingTree ) ) {
+
+        executeCypher(greetingTree);
+
+        String completeTree =
+                "CREATE (tree:Tree { id: 'complete' })" +
+                        "CREATE (name_blank_rule:Rule { parameter_names: 'name', parameter_types:'String', expression:'name.isEmpty()' })" +
+                        "CREATE (answer_yes:Answer { id: 'yes', query:\"MATCH (intent:Intent {id:'complete'})-[:HAS_RESPONSE]->(response) WHERE NOT 'name' IN response.parameter_names WITH response, rand() AS r ORDER BY r RETURN response.text AS value LIMIT 1\"})" +
+                        "CREATE (answer_no:Answer { id: 'no', query:\"MATCH (intent:Intent {id:'complete'})-[:HAS_RESPONSE]->(response) WHERE 'name' IN response.parameter_names WITH response, rand() AS r ORDER BY r RETURN response.text AS value LIMIT 1\"})" +
+                        "CREATE (tree)-[:HAS]->(name_blank_rule)" +
+                        "CREATE (name_blank_rule)-[:IS_TRUE]->(answer_yes)" +
+                        "CREATE (name_blank_rule)-[:IS_FALSE]->(answer_no)" +
+                        "RETURN 'complete tree created' AS message";
+
+        executeCypher(completeTree);
+
+        return Stream.of(new StringResult("Seeded Decisions"));
+    }
+
+    private void executeCypher(String intent) {
+        try ( Result result = db.execute( intent ) ) {
             while ( result.hasNext() )
             {
                 Map<String, Object> row = result.next();
@@ -44,7 +63,5 @@ public class Decisions {
                 }
             }
         }
-
-        return Stream.of(new StringResult("Seeded Decisions"));
     }
 }
