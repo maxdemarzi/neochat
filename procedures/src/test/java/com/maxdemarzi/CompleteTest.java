@@ -68,7 +68,7 @@ public class CompleteTest {
 
     private static final String MODEL_STATEMENT =
             "CREATE (a1:Account {id:'a1'})" +
-            "CREATE (m1:Member {fullName:'Max De Marzi'})" +
+            "CREATE (m1:Member {name:'Max De Marzi'})" +
             "CREATE (a1)-[:HAS_MEMBER]->(m1)" +
             "CREATE (a2:Account {id:'a2'})" +
             "CREATE (m2:Member)" +

@@ -2,7 +2,7 @@ package com.maxdemarzi;
 
 import com.maxdemarzi.decisions.DecisionTreeEvaluator;
 import com.maxdemarzi.decisions.DecisionTreeExpander;
-import com.maxdemarzi.facts.TimeOfDay;
+import com.maxdemarzi.facts.FactGenerator;
 import com.maxdemarzi.results.IntentResult;
 import com.maxdemarzi.results.StringResult;
 import com.maxdemarzi.schema.Labels;
@@ -22,7 +22,6 @@ import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
 import java.io.*;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Stream;
@@ -57,22 +56,24 @@ public class Procedures {
         ArrayList<IntentResult> results = new ArrayList<>();
         findIntents(text, results);
 
+        // Find the account we are interested in
         Node account = db.findNode(Labels.Account, ID, id);
-        Node last;
-        if (account.hasRelationship(Direction.OUTGOING, PREV_MESSAGE)) {
-            Relationship prev = account.getSingleRelationship(PREV_MESSAGE, Direction.OUTGOING);
-            prev.delete();
-            last = prev.getEndNode();
-        } else {
-            last = account;
-        }
 
+        // Create then next message node
         Node next = db.createNode(Labels.Message);
         next.setProperty(TEXT, text);
         next.setProperty(DATE, ZonedDateTime.now());
 
+        // Insert the message into the Previous Message Chain
+        if (account.hasRelationship(Direction.OUTGOING, PREV_MESSAGE)) {
+            Relationship prev = account.getSingleRelationship(PREV_MESSAGE, Direction.OUTGOING);
+            prev.delete();
+            Node last = prev.getEndNode();
+            next.createRelationshipTo(last, PREV_MESSAGE);
+        }
+
+        // Connect the new message at the head of the chain
         account.createRelationshipTo(next, PREV_MESSAGE);
-        next.createRelationshipTo(last, PREV_MESSAGE);
 
         // Get the Responses
         for (IntentResult result : results) {
@@ -86,8 +87,16 @@ public class Procedures {
         Node tree = db.findNode(Labels.Tree, ID, result.intent);
         if ( tree != null) {
             // Find the facts
-            Map<String, Object> facts = getMemberFacts(account);
-            getTimeFacts(facts);
+            FactGenerator factGenerator = new FactGenerator(db, account);
+            Map<String, Object> facts = new HashMap<>();
+            factGenerator.getMemberFacts(facts);
+            factGenerator.getTimeFacts(facts);
+
+            switch (result.intent) {
+                case "category_inquiry": {
+                    factGenerator.getCategoryFacts(result, facts);
+                }
+            }
 
             Stream<Path> paths = decisionPath(tree, facts);
             Path path = paths.findFirst().get();
@@ -102,6 +111,7 @@ public class Procedures {
             }
 
             // Fill in facts
+            //todo: figure out a way to replace arrays
             for (Map.Entry<String, Object> entry : facts.entrySet()) {
                 String key = "\\$" + entry.getKey();
                 response = response.replaceAll(key, entry.getValue().toString() );
@@ -127,19 +137,6 @@ public class Procedures {
             next.setProperty(ARGS, args);
         }
 
-    }
-
-    private void getTimeFacts(Map<String, Object> facts) {
-        facts.put("time_of_day", new TimeOfDay(LocalTime.now()).getTimeOfDay());
-    }
-
-    private Map<String, Object> getMemberFacts(Node account) {
-        Map<String, Object> facts = new HashMap<>();
-        facts.put("account_node_id", account.getId());
-        Result factResult = db.execute("MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE ID(a) = $account_node_id RETURN 'name' AS key, COALESCE(member.fullName, '') AS value", facts);
-        Map<String, Object> factMap = factResult.next();
-        facts.put((String)factMap.get("key"), factMap.get("value"));
-        return facts;
     }
 
     private Stream<Path> decisionPath(Node tree, Map<String, Object> facts) {

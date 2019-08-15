@@ -44,6 +44,11 @@ public class EnrichmentJob extends AbstractScheduledService {
                     properties.values().removeIf(Objects::isNull);
                     properties.remove("details");
                     properties.remove("dataAddOns");
+                    // Only save valid names
+                    String name = (String)properties.getOrDefault("fullName", "");
+                    if (!name.isEmpty()) {
+                        properties.put("name", name);
+                    }
                 }
                 CypherQueries.EnrichUser(driver, (String)map.get("email"), (String)map.get("phone"), properties);
             }

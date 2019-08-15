@@ -35,7 +35,9 @@ public class DecisionTreeExpander implements PathExpander {
                     return last.getRelationships(Direction.OUTGOING, choosePath(last, facts));
                 }
 
-            } catch (Exception ignored) { }
+            } catch (Exception ignored) {
+                ignored.printStackTrace();
+            }
             return last.getRelationships(Direction.OUTGOING, RelationshipTypes.REQUIRES);
         }
 

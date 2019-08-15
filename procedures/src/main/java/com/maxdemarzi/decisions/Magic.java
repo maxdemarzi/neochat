@@ -110,7 +110,7 @@ public class Magic {
         if ("long".equals(s))    { s = "J"; } else
         if ("float".equals(s))   { s = "F"; } else
         if ("double".equals(s))  { s = "D"; } else
-        if ("String".equals(s))  { s = "Ljava.lang.String";}
+        if ("String".equals(s))  { s = "Ljava.lang.String;";}
 
         while (--brackets >= 0) s = '[' + s;
         try {

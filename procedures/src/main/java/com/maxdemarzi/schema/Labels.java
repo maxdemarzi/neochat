@@ -10,6 +10,7 @@ public enum Labels implements Label {
     Member,
     Message,
     Parameter,
+    Product,
     Rule,
     Tree
 }

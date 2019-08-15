@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static com.maxdemarzi.schema.Properties.*;
 
-class DecisionTree {
+public class DecisionTree {
 
     static boolean isValid(Node node, String fact) throws Exception {
         ExpressionEvaluator ee = new ExpressionEvaluator();
@@ -40,7 +40,8 @@ class DecisionTree {
         // Fill the arguments array with their corresponding values
         Object[] arguments = new Object[parameterNames.length];
         for (int j = 0; j < parameterNames.length; ++j) {
-            arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
+            arguments[j] = facts.get(parameterNames[j]);
+            //arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
         }
 
         // Set our parameters with their matching types
@@ -63,7 +64,8 @@ class DecisionTree {
         // Fill the arguments array with their corresponding values
         Object[] arguments = new Object[parameterNames.length];
         for (int j = 0; j < parameterNames.length; ++j) {
-            arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
+            arguments[j] = facts.get(parameterNames[j]);
+            //arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
         }
 
         // Set our parameters with their matching types
@@ -73,5 +75,28 @@ class DecisionTree {
         se.cook((String) node.getProperty(SCRIPT));
 
         return RelationshipType.withName((String) se.evaluate(arguments));
+    }
+
+    public static String trueOrFalse(Map<String, Object> node, Map<String, Object> facts) throws Exception {
+        ExpressionEvaluator ee = new ExpressionEvaluator();
+        ee.setExpressionType(boolean.class);
+
+        String[] parameterNames = Magic.explode((String) node.getOrDefault(PARAMETER_NAMES, node.getOrDefault(ID, EMPTY_STRING)));
+        Class<?>[] parameterTypes = Magic.stringToTypes((String) node.getOrDefault(PARAMETER_TYPES, node.getOrDefault(TYPE, EMPTY_STRING)));
+
+        // Fill the arguments array with their corresponding values
+        Object[] arguments = new Object[parameterNames.length];
+        for (int j = 0; j < parameterNames.length; ++j) {
+            arguments[j] = facts.get(parameterNames[j]);
+            //arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
+        }
+
+        // Set our parameters with their matching types
+        ee.setParameters(parameterNames, parameterTypes);
+
+        // And now we "cook" (scan, parse, compile and load) the expression.
+        ee.cook((String) node.get(EXPRESSION));
+
+        return "IS_" + ee.evaluate(arguments).toString().toUpperCase();
     }
 }

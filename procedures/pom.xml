@@ -14,6 +14,7 @@
         <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
         <neo4j.version>3.5.8</neo4j.version>
         <neo4j.driver.version>1.7.5</neo4j.driver.version>
+        <neo4j.apoc.version>3.5.0.4</neo4j.apoc.version>
         <opennlp.version>1.9.1</opennlp.version>
         <commons-text.version>1.7</commons-text.version>
         <janino.version>3.0.15</janino.version>
@@ -77,6 +78,15 @@
         </dependency>
 
         <!-- Test Dependencies -->
+
+        <!-- https://mvnrepository.com/artifact/org.neo4j.procedure/apoc -->
+        <dependency>
+            <groupId>org.neo4j.procedure</groupId>
+            <artifactId>apoc</artifactId>
+            <version>3.5.0.4</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <!-- This is used for a utility that lets us start Neo4j with
                  a specific Procedure, which is nice for writing tests. -->
