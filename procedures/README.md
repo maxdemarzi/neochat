@@ -1,4 +1,4 @@
-# NeoChat Procedures
+# Neo Chat Procedures
 Procedures for Neo4j Based Chat Bot Application
 
 Instructions

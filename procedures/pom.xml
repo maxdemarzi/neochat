@@ -79,7 +79,7 @@
 
         <!-- Test Dependencies -->
 
-        <!-- https://mvnrepository.com/artifact/org.neo4j.procedure/apoc -->
+        <!-- Awesome Procedures on Cypher -->
         <dependency>
             <groupId>org.neo4j.procedure</groupId>
             <artifactId>apoc</artifactId>

@@ -53,8 +53,6 @@ public class Procedures {
     @Procedure(name = "com.maxdemarzi.chat", mode = Mode.WRITE)
     @Description("CALL com.maxdemarzi.chat(String id, String text)")
     public Stream<IntentResult> chat(@Name(value = "id") String id, @Name(value = "text") String text) {
-        ArrayList<IntentResult> results = new ArrayList<>();
-        findIntents(text, results);
 
         // Find the account we are interested in
         Node account = db.findNode(Labels.Account, ID, id);
@@ -74,6 +72,13 @@ public class Procedures {
 
         // Connect the new message at the head of the chain
         account.createRelationshipTo(next, PREV_MESSAGE);
+
+        // TODO: Was our last response a Question?
+        // if so then get the answer and respond with the last intent.
+        // question type: yes/no, specific choice, entity choice (product, money, time, etc)
+
+        ArrayList<IntentResult> results = new ArrayList<>();
+        findIntents(text, results);
 
         // Get the Responses
         for (IntentResult result : results) {
