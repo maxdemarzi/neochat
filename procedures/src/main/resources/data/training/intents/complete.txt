@@ -11,7 +11,7 @@ ciao
 cheerio
 cya
 farewell
-good Bye
+good bye
 gotta bolt
 gotta go
 gotta hit the road

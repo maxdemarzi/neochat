@@ -40,8 +40,11 @@ public class DecisionTree {
         // Fill the arguments array with their corresponding values
         Object[] arguments = new Object[parameterNames.length];
         for (int j = 0; j < parameterNames.length; ++j) {
-            arguments[j] = facts.get(parameterNames[j]);
-            //arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
+            if (facts.get(parameterNames[j]).getClass().isArray()) {
+                arguments[j] = facts.get(parameterNames[j]);
+            } else {
+                arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
+            }
         }
 
         // Set our parameters with their matching types
@@ -64,8 +67,11 @@ public class DecisionTree {
         // Fill the arguments array with their corresponding values
         Object[] arguments = new Object[parameterNames.length];
         for (int j = 0; j < parameterNames.length; ++j) {
-            arguments[j] = facts.get(parameterNames[j]);
-            //arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
+            if (facts.get(parameterNames[j]).getClass().isArray()) {
+                arguments[j] = facts.get(parameterNames[j]);
+            } else {
+                arguments[j] = Magic.createObject(parameterTypes[j], facts.get(parameterNames[j]).toString());
+            }
         }
 
         // Set our parameters with their matching types

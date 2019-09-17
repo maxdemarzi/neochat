@@ -55,7 +55,7 @@ public class CompleteTest {
 
             Record record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("complete");
-            assertThat(record.get("response").asString()).contains("Max De Marzi!");
+            assertThat(record.get("response").asString()).contains("Max De Marzi");
 
             result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
                     parameters( "id", "a2" ,"text", "Thanks" ) );

@@ -24,6 +24,8 @@ import org.neo4j.procedure.*;
 import java.io.*;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.maxdemarzi.schema.Properties.*;
@@ -46,9 +48,9 @@ public class Procedures {
     private static SentenceDetectorME sentencizer;
     private static POSTaggerME partOfSpeecher;
     private static LemmatizerME lemmatizer;
-    private static List<TokenNameFinderModel> tokenNameFinderModels;
     private static List<NameFinderME> nameFinderMEs;
 
+    private static Pattern brackets = Pattern.compile("\\[(.*?)\\]");
 
     @Procedure(name = "com.maxdemarzi.chat", mode = Mode.WRITE)
     @Description("CALL com.maxdemarzi.chat(String id, String text)")
@@ -116,8 +118,21 @@ public class Procedures {
             }
 
             // Fill in facts
-            //todo: figure out a way to replace arrays
             for (Map.Entry<String, Object> entry : facts.entrySet()) {
+                Pattern arrayFactPattern = Pattern.compile("\\$" + entry.getKey() + "\\[\\d+\\]");
+                Matcher matcher = arrayFactPattern.matcher(response);
+                HashMap<String, String> replacements = new HashMap<>();
+                // Don't make the replacements in this while loop or you will mess up the response string.
+                while(matcher.find()) {
+                    String found = response.substring(matcher.start(), matcher.end());
+                    String num = found.split("\\[")[1].split("\\]")[0];
+                    String[] arrayFact = (String[])entry.getValue();
+                    replacements.put(found, arrayFact[Integer.parseInt(num)]);
+                }
+                for (Map.Entry<String, String> replacement: replacements.entrySet()) {
+                    response = response.replaceFirst(Pattern.quote(replacement.getKey()), replacement.getValue() );
+                }
+
                 String key = "\\$" + entry.getKey();
                 response = response.replaceAll(key, entry.getValue().toString() );
             }
@@ -227,11 +242,6 @@ public class Procedures {
                 person = modelDirectory + "en-ner-person.bin";
             }
 
-            if (intentsDirectory.isEmpty()) {
-                ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-                intentsDirectory = classLoader.getResource("data/training/intents").getFile();
-            }
-
             log.info("Token Model: " + token );
             log.info("Sentences Model: " + sent );
             log.info("POS Model: " + maxent );
@@ -240,19 +250,19 @@ public class Procedures {
             log.info("Money Model: " + money );
             log.info("Person Model: " + person );
 
-            log.info("Intents Directory: " + intentsDirectory);
-
-            // Initialize the tokenizer
-            InputStream modelIn = new FileInputStream(token);
-            TokenizerModel model = new TokenizerModel(modelIn);
-            tokenizer = new TokenizerME(model);
-            log.info("Initialized the tokenizer");
+            InputStream modelIn;
 
             // Initialize the sentencizer
             modelIn =  new FileInputStream(sent);
             SentenceModel sentenceModel = new SentenceModel(modelIn);
             sentencizer = new SentenceDetectorME(sentenceModel);
             log.info("Initialized the sentencizer");
+
+            // Initialize the tokenizer
+            modelIn = new FileInputStream(token);
+            TokenizerModel model = new TokenizerModel(modelIn);
+            tokenizer = new TokenizerME(model);
+            log.info("Initialized the tokenizer");
 
             // Initialize the partOfSpeecher
             modelIn =  new FileInputStream(maxent);
@@ -266,8 +276,15 @@ public class Procedures {
             lemmatizer = new LemmatizerME(lemmaModel);
             log.info("Initialized the lemmatizer");
 
+            if (intentsDirectory.isEmpty()) {
+                ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+                intentsDirectory = classLoader.getResource("data/training/intents").getFile();
+            }
+
             // Gather the Intents
             File trainingDirectory = new File(intentsDirectory);
+
+            log.info("Intents Directory: " + intentsDirectory);
 
             List<ObjectStream<DocumentSample>> categoryStreams = new ArrayList<>();
             for (File trainingFile : trainingDirectory.listFiles()) {
@@ -294,7 +311,8 @@ public class Procedures {
             log.info("Initialized the categorizer");
 
             // Initialize TokenFinders
-            tokenNameFinderModels = new ArrayList<>();
+            List<TokenNameFinderModel> tokenNameFinderModels = new ArrayList<>();
+            nameFinderMEs = new ArrayList<>();
 
             HashMap<String,ArrayList<String>> slots = new HashMap<>();
             slots.put("product", new ArrayList<String>() {{
@@ -325,13 +343,9 @@ public class Procedures {
 
                 TokenNameFinderModel tokenNameFinderModel = NameFinderME.train("en", slot.getKey(), combinedNameSampleStream, trainingParams, new TokenNameFinderFactory());
                 combinedNameSampleStream.close();
-                tokenNameFinderModels.add(tokenNameFinderModel);
-            }
-
-            nameFinderMEs = new ArrayList<>();
-            for (TokenNameFinderModel tokenNameFinderModel : tokenNameFinderModels) {
                 nameFinderMEs.add(new NameFinderME(tokenNameFinderModel));
             }
+
             log.info("Initialized the token finders");
 
             // Add date NER model

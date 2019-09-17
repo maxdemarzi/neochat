@@ -64,14 +64,14 @@ public class CategoryInquiryTest {
 
             Record record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("category_inquiry");
-            assertThat(record.get("response").asString()).contains("Max De Marzi!");
+            assertThat(record.get("response").asString()).contains("Weapons");
 
             result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
-                    parameters( "id", "a2" ,"text", "got any shotguns?" ) );
+                    parameters( "id", "a2" ,"text", "do you have any shotguns" ) );
 
             record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("category_inquiry");
-            assertThat(record.get("response").asString()).doesNotContain("Max");
+            assertThat(record.get("response").asString()).contains("Shotguns");
         }
     }
 

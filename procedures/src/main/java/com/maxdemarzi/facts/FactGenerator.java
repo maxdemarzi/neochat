@@ -71,12 +71,12 @@ public class FactGenerator {
             HashMap<String, Object> parameters = new HashMap<>();
             parameters.put("category_node_id", match.getValue().getId());
 
-            Result subCategoryResult = db.execute("MATCH (c:Category)<-[:IN_CATEGORY]->(sub:Category) WHERE ID(c) = $category_node_id RETURN sub.name AS name", parameters);
+            Result subCategoryResult = db.execute("MATCH (c:Category)<-[:IN_CATEGORY]-(sub:Category) WHERE ID(c) = $category_node_id RETURN sub.name AS name", parameters);
             while (subCategoryResult.hasNext()) {
                 subcategories.add((String)subCategoryResult.next().get("name"));
             }
 
-            Result productResult = db.execute("MATCH (c:Category)<-[:IN_CATEGORY]->(sub:Product) WHERE ID(c) = $category_node_id RETURN sub.name AS name", parameters);
+            Result productResult = db.execute("MATCH (c:Category)<-[:IN_CATEGORY]-(sub:Product) WHERE ID(c) = $category_node_id RETURN sub.name AS name", parameters);
             while (productResult.hasNext()) {
                 products.add((String)productResult.next().get("name"));
             }

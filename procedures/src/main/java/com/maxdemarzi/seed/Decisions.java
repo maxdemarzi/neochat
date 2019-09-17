@@ -59,7 +59,7 @@ public class Decisions {
                 "CREATE (has_subcategories_rule:Rule { parameter_names: 'subcategories', parameter_types:'String[]', expression:'subcategories.length > 0' })" +
 
                 "CREATE (zero:Answer { id: 'zero', query:\"MATCH (intent:Intent {id:'category_inquiry'})-[:HAS_RESPONSE]->(response) WHERE response.category_size = 0 WITH response, rand() AS r ORDER BY r RETURN response.text AS value LIMIT 1\"})" +
-                "CREATE (one:Answer { id: 'one', query:\"MATCH (intent:Intent {id:'category_inquiry'})-[:HAS_RESPONSE]->(response) WHERE response.category_size = 1 WITH response, rand() AS r ORDER BY r RETURN response.text AS value LIMIT 1\"})" +
+                "CREATE (one:Answer { id: 'one', query:\"MATCH (intent:Intent {id:'category_inquiry'})-[:HAS_RESPONSE]->(response) WHERE response.category_size = 1 AND response.subcategories = false WITH response, rand() AS r ORDER BY r RETURN response.text AS value LIMIT 1\"})" +
                 "CREATE (more_than_one:Answer { id: 'more_than_one', query:\"MATCH (intent:Intent {id:'category_inquiry'})-[:HAS_RESPONSE]->(response) WHERE response.category_size > 1 WITH response, rand() AS r ORDER BY r RETURN response.text AS value LIMIT 1\"})" +
                 "CREATE (be_specific:Answer { id: 'be_specific', query:\"MATCH (intent:Intent {id:'category_inquiry'})-[:HAS_RESPONSE]->(response) WHERE response.category_size = 1 AND response.subcategories = true WITH response, rand() AS r ORDER BY r RETURN response.text AS value LIMIT 1\"})" +
 

@@ -24,16 +24,19 @@ Restart your Neo4j Server.
 Create the Schema by running this stored procedure:
 
     CALL com.maxdemarzi.schema.generate();
+
+Copy the files in neochat/procedures/src/main/resources/data/catalog to the Neo4j import directory.
     
 Create some seed data:
     
     CALL com.maxdemarzi.seed.decisions();
     CALL com.maxdemarzi.seed.intents();
+    CALL com.maxdemarzi.seed.catalog()
     
 Train the models:
 
     CALL com.maxdemarzi.train(model_directory, intents_directory);
-    CALL com.maxdemarzi.train("/Users/maxdemarzi/Documents/Projects/shadowbot/procedures/src/main/resources/data/models/", "/Users/maxdemarzi/Documents/Projects/shadowbot/procedures/src/main/resources/data/training/intents")
+    CALL com.maxdemarzi.train("/Users/maxdemarzi/Documents/Projects/neochat/procedures/src/main/resources/data/models/", "/Users/maxdemarzi/Documents/Projects/shadowbot/procedures/src/main/resources/data/training/intents")
     
 
 Models

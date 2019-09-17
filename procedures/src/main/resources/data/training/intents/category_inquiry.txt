@@ -11,6 +11,6 @@ options for <START:category> bikes <END>
 show me your <START:category> shotguns <END>
 show me the <START:category> rifles <END>
 what kind of <START:category> rides <END> you got
-what <START:category> heavy pistols <END> do you have ?
-what is the best <START:category> cyberdeck <END> you carry ?
-you wouldn't happen to carry <START:category> perfumes <END> ?
+what <START:category> heavy pistols <END> do you have
+what is the best <START:category> cyberdeck <END> you carry
+you wouldn't happen to carry <START:category> perfumes <END>

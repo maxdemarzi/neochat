@@ -56,9 +56,9 @@ public class Intents {
                 "CREATE (i1r1:Response {text:'Are you interested in any specific types of products?', parameter_names:[], category_size:0})" +
                 "CREATE (i1r2:Response {text:'Can you be more specific?', parameter_names:[], category_size:0})" +
                 "CREATE (i1r3:Response {text:'What are you really looking for?', parameter_names:[], category_size:0})" +
-                "CREATE (i1r4:Response {text:'We have plenty of $categories[0], what about $products[0] or $products[1]?', parameter_names:['categories', 'products'], category_size:1})" +
-                "CREATE (i1r5:Response {text:'We carry $category, like $products[0] or $products[1]?', parameter_names:['categories', 'products'], category_size:1})" +
-                "CREATE (i1r6:Response {text:'That is a broad $categories[0], into $subcategories[0] or $subcategories[1]?', parameter_names:['categories', 'subcategories'], category_size:1, subcategories: true})" +
+                "CREATE (i1r4:Response {text:'We have plenty of $categories[0], what about $products[0] or $products[1]?', parameter_names:['categories', 'products'], category_size:1, subcategories: false})" +
+                "CREATE (i1r5:Response {text:'We carry $category, like $products[0] or $products[1]?', parameter_names:['categories', 'products'], category_size:1, subcategories: false})" +
+                "CREATE (i1r6:Response {text:'$categories[0] is a kinda broad, into $subcategories[0] or $subcategories[1]?', parameter_names:['categories', 'subcategories'], category_size:1, subcategories: true})" +
                 "CREATE (i1r7:Response {text:'What type of $categories[0], like $subcategories[0] or $subcategories[1]?', parameter_names:['categories', 'subcategories'], category_size:1, subcategories: true})" +
                 "CREATE (i1r8:Response {text:'What do you want to talk about first? $categories[0] or $categories[1]', parameter_names:['categories'], category_size:2})" +
                 "CREATE (i1r9:Response {text:'Lets narrow it down? $categories[0] or $categories[1]', parameter_names:['categories'], category_size:2})" +
