@@ -1,7 +1,6 @@
 package com.maxdemarzi;
 
 import com.maxdemarzi.seed.Decisions;
-import com.maxdemarzi.seed.Intents;
 import org.junit.jupiter.api.*;
 import org.neo4j.driver.v1.*;
 import org.neo4j.harness.ServerControls;
@@ -19,7 +18,6 @@ public class GreetingTest {
         neo4j = TestServerBuilders.newInProcessBuilder()
                 .withProcedure(Procedures.class)
                 .withProcedure(Decisions.class)
-                .withProcedure(Intents.class)
                 .withFixture(MODEL_STATEMENT)
                 .newServer();
     }
@@ -42,7 +40,6 @@ public class GreetingTest {
 
             // When I use the procedure
             session.run( "CALL com.maxdemarzi.seed.decisions()");
-            session.run( "CALL com.maxdemarzi.seed.intents()");
             session.run( "CALL com.maxdemarzi.train" );
             StatementResult result = session.run( "CALL com.maxdemarzi.intents($text)",
                     parameters( "text", "Hello?" ) );

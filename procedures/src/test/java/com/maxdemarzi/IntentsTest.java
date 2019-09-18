@@ -34,12 +34,11 @@ public class IntentsTest {
         try( Driver driver = GraphDatabase.driver( neo4j.boltURI() , Config.build().withoutEncryption().toConfig() ) )
         {
 
-            // Given I've started Neo4j with the procedure
-            //       which my 'neo4j' rule above does.
+            // Given I've started Neo4j and trained the models
             Session session = driver.session();
+            session.run( "CALL com.maxdemarzi.train" );
 
             // When I use the procedure
-            session.run( "CALL com.maxdemarzi.train" );
             StatementResult result = session.run( "CALL com.maxdemarzi.intents($text)",
                     parameters( "text", "Hello?" ) );
 

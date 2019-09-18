@@ -6,6 +6,7 @@ import com.maxdemarzi.facts.FactGenerator;
 import com.maxdemarzi.results.IntentResult;
 import com.maxdemarzi.results.StringResult;
 import com.maxdemarzi.schema.Labels;
+import com.maxdemarzi.schema.RelationshipTypes;
 import opennlp.tools.doccat.*;
 import opennlp.tools.lemmatizer.LemmatizerME;
 import opennlp.tools.lemmatizer.LemmatizerModel;
@@ -107,15 +108,14 @@ public class Procedures {
 
             Stream<Path> paths = decisionPath(tree, facts);
             Path path = paths.findFirst().get();
-
-            String query = (String)path.endNode().getProperty(QUERY);
-            String response = "";
-            try ( Result queryResult = db.execute( query ) ) {
-                while (queryResult.hasNext()) {
-                    Map<String, Object> row = queryResult.next();
-                    response = (String)row.get("value");
-                }
+            ArrayList<String> potentialResponses = new ArrayList<>();
+            for (Relationship responses : path.endNode().getRelationships(Direction.OUTGOING, RelationshipTypes.HAS_RESPONSE)) {
+                Node response = responses.getEndNode();
+                potentialResponses.add((String)response.getProperty(TEXT, ""));
             }
+
+            Random rand = new Random();
+            String response = potentialResponses.get(rand.nextInt(potentialResponses.size()));
 
             // Fill in facts
             for (Map.Entry<String, Object> entry : facts.entrySet()) {
@@ -186,22 +186,21 @@ public class Procedures {
             // Tag separated words with POS tags to understand their grammatical structure.
             String[] posTags = partOfSpeecher.tag(tokens);
 
-            // Lemmatize each word so that its easy to categorize.
+            // Lemmatize each word so that it is easy to categorize.
             String[] lemmas = lemmatizer.lemmatize(tokens, posTags);
 
             double[] probabilitiesOfOutcomes = categorizer.categorize(lemmas);
             String category = categorizer.getBestCategory(probabilitiesOfOutcomes);
 
             List<Map<String, Object>> args = new ArrayList<>();
-            if( !(category.equals("greeting") || category.equals("complete")) ) {
-                for (NameFinderME nameFinderME : nameFinderMEs) {
-                    Span[] spans = nameFinderME.find(tokens);
-                    String[] names = Span.spansToStrings(spans, tokens);
-                    for (int i = 0; i < spans.length; i++) {
-                        HashMap<String, Object> arg = new HashMap<>();
-                        arg.put(spans[i].getType(), names[i]);
-                        args.add(arg);
-                    }
+
+            for (NameFinderME nameFinderME : nameFinderMEs) {
+                Span[] spans = nameFinderME.find(tokens);
+                String[] names = Span.spansToStrings(spans, tokens);
+                for (int i = 0; i < spans.length; i++) {
+                    HashMap<String, Object> arg = new HashMap<>();
+                    arg.put(spans[i].getType(), names[i]);
+                    args.add(arg);
                 }
             }
 

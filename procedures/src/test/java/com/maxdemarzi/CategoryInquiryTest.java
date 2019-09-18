@@ -18,7 +18,6 @@ public class CategoryInquiryTest {
                 .withProcedure(Procedures.class)
                 .withProcedure(Catalog.class)
                 .withProcedure(Decisions.class)
-                .withProcedure(Intents.class)
                 .withFixture(MODEL_STATEMENT)
                 .withProcedure(apoc.load.Xml.class)
                 .withFunction(apoc.map.Maps.class)
@@ -45,9 +44,6 @@ public class CategoryInquiryTest {
             // When I use the procedure
             StatementResult result = session.run( "CALL com.maxdemarzi.seed.decisions()");
             assertThat(result.single().get("value").asString()).isEqualTo("Seeded Decisions");
-
-            result = session.run( "CALL com.maxdemarzi.seed.intents();");
-            assertThat(result.single().get("value").asString()).isEqualTo("Seeded Intents");
 
             result = session.run( "CALL com.maxdemarzi.seed.catalog('test');");
             assertThat(result.single().get("value").asString()).isEqualTo("Seeded Catalog");

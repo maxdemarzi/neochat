@@ -29,8 +29,7 @@ Copy the files in neochat/procedures/src/main/resources/data/catalog to the Neo4
     
 Create some seed data:
     
-    CALL com.maxdemarzi.seed.decisions();
-    CALL com.maxdemarzi.seed.intents();
+    CALL com.maxdemarzi.seed.decisions();    
     CALL com.maxdemarzi.seed.catalog()
     
 Train the models:
