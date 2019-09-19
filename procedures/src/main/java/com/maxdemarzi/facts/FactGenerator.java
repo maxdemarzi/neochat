@@ -13,16 +13,16 @@ import static com.maxdemarzi.schema.Properties.NAME;
 public class FactGenerator {
 
     private GraphDatabaseService db;
-    private Node account;
+    private Node member;
 
     public FactGenerator(GraphDatabaseService db, Node account) {
         this.db = db;
-        this.account = account;
+        this.member = account;
     }
 
     public void getMemberFacts( Map<String, Object> facts) {
-        facts.put("account_node_id", account.getId());
-        Result factResult = db.execute("MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE ID(a) = $account_node_id RETURN PROPERTIES(member) AS properties LIMIT 1", facts);
+        facts.put("member_node_id", member.getId());
+        Result factResult = db.execute("MATCH (member:Member) WHERE ID(member) = $member_node_id RETURN PROPERTIES(member) AS properties", facts);
         Map<String, Object> factMap = (Map<String, Object>)factResult.next().get("properties");
         facts.putAll(factMap);
         facts.putIfAbsent("name", "");

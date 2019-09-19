@@ -51,51 +51,63 @@ public class Procedures {
     private static LemmatizerME lemmatizer;
     private static List<NameFinderME> nameFinderMEs;
 
-    private static Pattern brackets = Pattern.compile("\\[(.*?)\\]");
-
     @Procedure(name = "com.maxdemarzi.chat", mode = Mode.WRITE)
-    @Description("CALL com.maxdemarzi.chat(String id, String text)")
-    public Stream<IntentResult> chat(@Name(value = "id") String id, @Name(value = "text") String text) {
-
-        // Find the account we are interested in
-        Node account = db.findNode(Labels.Account, ID, id);
-
-        // Create then next message node
-        Node next = db.createNode(Labels.Message);
-        next.setProperty(TEXT, text);
-        next.setProperty(DATE, ZonedDateTime.now());
-
-        // Insert the message into the Previous Message Chain
-        if (account.hasRelationship(Direction.OUTGOING, PREV_MESSAGE)) {
-            Relationship prev = account.getSingleRelationship(PREV_MESSAGE, Direction.OUTGOING);
-            prev.delete();
-            Node last = prev.getEndNode();
-            next.createRelationshipTo(last, PREV_MESSAGE);
-        }
-
-        // Connect the new message at the head of the chain
-        account.createRelationshipTo(next, PREV_MESSAGE);
-
-        // TODO: Was our last response a Question?
-        // if so then get the answer and respond with the last intent.
-        // question type: yes/no, specific choice, entity choice (product, money, time, etc)
-
+    @Description("CALL com.maxdemarzi.chat(String id, String phone, String text)")
+    public Stream<IntentResult> chat(@Name(value = "id") String id,
+                                     @Name(value = "phone") String phone,
+                                     @Name(value = "text") String text) {
         ArrayList<IntentResult> results = new ArrayList<>();
-        findIntents(text, results);
 
-        // Get the Responses
-        for (IntentResult result : results) {
-            respond(account, result, next);
+        // Find the account and member that is chatting with us
+        Node account = db.findNode(Labels.Account, ID, id);
+        Node member = null;
+        for (Relationship hasMember : account.getRelationships(Direction.OUTGOING, RelationshipTypes.HAS_MEMBER)) {
+            member = hasMember.getEndNode();
+            if (member.getProperty(PHONE).equals(phone)) {
+                break;
+            } else {
+                member = null;
+            }
+        }
+        if (member != null) {
+
+            // Create then next message node
+            Node next = db.createNode(Labels.Message);
+            next.setProperty(TEXT, text);
+            next.setProperty(DATE, ZonedDateTime.now());
+
+            // Insert the message into the Previous Message Chain
+            if (member.hasRelationship(Direction.OUTGOING, PREV_MESSAGE)) {
+                Relationship prev = member.getSingleRelationship(PREV_MESSAGE, Direction.OUTGOING);
+                prev.delete();
+                Node last = prev.getEndNode();
+                next.createRelationshipTo(last, PREV_MESSAGE);
+            }
+
+            // Connect the new message at the head of the chain
+            member.createRelationshipTo(next, PREV_MESSAGE);
+
+            // TODO: Was our last response a Question?
+            // if so then get the answer and respond with the last intent.
+            // question type: yes/no, specific choice, entity choice (product, money, time, etc)
+
+
+            findIntents(text, results);
+
+            // Get the Responses
+            for (IntentResult result : results) {
+                respond(member, result, next);
+            }
         }
         return results.stream();
     }
 
-    private void respond(Node account, IntentResult result, Node next) {
+    private void respond(Node member, IntentResult result, Node next) {
         // Which Decision Tree are we interested in?
         Node tree = db.findNode(Labels.Tree, ID, result.intent);
-        if ( tree != null) {
+        if (tree != null) {
             // Find the facts
-            FactGenerator factGenerator = new FactGenerator(db, account);
+            FactGenerator factGenerator = new FactGenerator(db, member);
             Map<String, Object> facts = new HashMap<>();
             factGenerator.getMemberFacts(facts);
             factGenerator.getTimeFacts(facts);
@@ -116,32 +128,15 @@ public class Procedures {
 
             Random rand = new Random();
             String response = potentialResponses.get(rand.nextInt(potentialResponses.size()));
-
-            // Fill in facts
-            for (Map.Entry<String, Object> entry : facts.entrySet()) {
-                Pattern arrayFactPattern = Pattern.compile("\\$" + entry.getKey() + "\\[\\d+\\]");
-                Matcher matcher = arrayFactPattern.matcher(response);
-                HashMap<String, String> replacements = new HashMap<>();
-                // Don't make the replacements in this while loop or you will mess up the response string.
-                while(matcher.find()) {
-                    String found = response.substring(matcher.start(), matcher.end());
-                    String num = found.split("\\[")[1].split("\\]")[0];
-                    String[] arrayFact = (String[])entry.getValue();
-                    replacements.put(found, arrayFact[Integer.parseInt(num)]);
-                }
-                for (Map.Entry<String, String> replacement: replacements.entrySet()) {
-                    response = response.replaceFirst(Pattern.quote(replacement.getKey()), replacement.getValue() );
-                }
-
-                String key = "\\$" + entry.getKey();
-                response = response.replaceAll(key, entry.getValue().toString() );
-            }
+            response = fillResponseWithFacts(facts, response);
 
             result.setResponse(response);
 
             // Update Graph
-            next.setProperty(INTENT, result.intent);
-            next.setProperty(TEXT, result.response);
+            Node responseNode = db.createNode(Labels.Reply);
+
+            responseNode.setProperty(INTENT, result.intent);
+            responseNode.setProperty(TEXT, result.response);
 
             // Store Args in [type, value, type, value]
             String[] args = new String[2 * result.args.size()];
@@ -154,9 +149,34 @@ public class Procedures {
                     index++;
                 }
             }
-            next.setProperty(ARGS, args);
+            responseNode.setProperty(ARGS, args);
+
+            next.createRelationshipTo(responseNode, RelationshipTypes.HAS_REPLY);
         }
 
+    }
+
+    private String fillResponseWithFacts(Map<String, Object> facts, String response) {
+        // Fill in facts
+        for (Map.Entry<String, Object> entry : facts.entrySet()) {
+            Pattern arrayFactPattern = Pattern.compile("\\$" + entry.getKey() + "\\[\\d+\\]");
+            Matcher matcher = arrayFactPattern.matcher(response);
+            HashMap<String, String> replacements = new HashMap<>();
+            // Don't make the replacements in this while loop or you will mess up the response string.
+            while(matcher.find()) {
+                String found = response.substring(matcher.start(), matcher.end());
+                String num = found.split("\\[")[1].split("\\]")[0];
+                String[] arrayFact = (String[])entry.getValue();
+                replacements.put(found, arrayFact[Integer.parseInt(num)]);
+            }
+            for (Map.Entry<String, String> replacement: replacements.entrySet()) {
+                response = response.replaceFirst(Pattern.quote(replacement.getKey()), replacement.getValue() );
+            }
+
+            String key = "\\$" + entry.getKey();
+            response = response.replaceAll(key, entry.getValue().toString() );
+        }
+        return response;
     }
 
     private Stream<Path> decisionPath(Node tree, Map<String, Object> facts) {

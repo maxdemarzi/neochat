@@ -47,15 +47,15 @@ public class GreetingTest {
             // Then I should get what I expect
             assertThat(result.single().get("intent").asString()).isEqualTo("greeting");
 
-            result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
-                    parameters( "id", "a1" ,"text", "Hello?" ) );
+            result = session.run( "CALL com.maxdemarzi.chat($id, $phone, $text)",
+                    parameters( "id", "a1", "phone", "123", "text", "Hello?" ) );
 
             Record record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("greeting");
             assertThat(record.get("response").asString()).endsWith("Max De Marzi!");
 
-            result = session.run( "CALL com.maxdemarzi.chat($id, $text)",
-                    parameters( "id", "a2" ,"text", "Hello?" ) );
+            result = session.run( "CALL com.maxdemarzi.chat($id, $phone, $text)",
+                    parameters( "id", "a2", "phone", "456", "text", "Hello?" ) );
 
              record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("greeting");
@@ -65,10 +65,10 @@ public class GreetingTest {
 
     private static final String MODEL_STATEMENT =
             "CREATE (a1:Account {id:'a1'})" +
-            "CREATE (m1:Member {name:'Max De Marzi'})" +
+            "CREATE (m1:Member {name:'Max De Marzi', phone:'123'})" +
             "CREATE (a1)-[:HAS_MEMBER]->(m1)" +
             "CREATE (a2:Account {id:'a2'})" +
-            "CREATE (m2:Member)" +
+            "CREATE (m2:Member { phone:'456'})" +
             "CREATE (a2)-[:HAS_MEMBER]->(m2)"
             ;
 }

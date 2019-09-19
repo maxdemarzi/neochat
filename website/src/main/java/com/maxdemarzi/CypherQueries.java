@@ -7,26 +7,27 @@ import java.util.*;
 
 public interface CypherQueries {
 
-    final String getUser = "MATCH (u:Account) WHERE u.id = $id RETURN u";
-    final String authorizeUser = "MATCH (u:Account) WHERE u.token = $token RETURN u";
-    final String tokenizeUser = "MATCH (u:Account) WHERE u.id = $id SET u.token = u.id + toString(rand()) RETURN u.token AS token";
-    final String createUser = "CREATE (u:Account { id: $id, password: $password })-[:HAS_MEMBER]->(member:Member { phone: $phone } ) RETURN u.id AS id, member.phone AS phone";
-    final String enrichUser = "MATCH (u:Account)-[:HAS_MEMBER]->(member) WHERE u.id = $id AND member.phone = $phone SET member += $properties RETURN member";
-    final String chat = "CALL com.maxdemarzi.chat($id, $text)";
+    String getMember = "MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE a.id = $id AND member.phone = $phone RETURN member";
+    String authorizeMember = "MATCH (member:Member) WHERE member.token = $token RETURN member";
+    String tokenizeMember = "MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE a.id = $id AND member.phone = $phone SET member.token = $phone + toString(rand()) RETURN member.token AS token";
+    String createMember = "CREATE (a:Account { id: $id, password: $password })-[:HAS_MEMBER]->(member:Member { phone: $phone } ) RETURN a.id AS id, member.phone AS phone";
+    String enrichUser = "MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE a.id = $id AND member.phone = $phone SET member += $properties RETURN member";
+    String chat = "CALL com.maxdemarzi.chat($id, $phone, $text)";
 
-    static List<Map<String, Object>> Chat(Driver driver, String id, String text) {
+    static List<Map<String, Object>> Chat(Driver driver, String id, String phone, String text) {
         return Iterators.asList(
             query(driver, chat, new HashMap<String, Object>() {{
                 put("id", id);
+                put("phone", phone);
                 put("text", text);
             }})
         );
     }
 
-    static Map<String, Object> EnrichUser(Driver driver, String email, String phone, Map<String, Object> properties) {
+    static Map<String, Object> EnrichMember(Driver driver, String id, String phone, Map<String, Object> properties) {
         Map<String, Object> response = Iterators.singleOrNull(query(driver, enrichUser,
                 new HashMap<String, Object>() {{
-                    put("id", email);
+                    put("id", id);
                     put("phone", phone);
                     put("properties", properties);
             }}
@@ -38,8 +39,8 @@ public interface CypherQueries {
         return null;
     }
 
-    static Map<String, Object> CreateUser(Driver driver, String id, String password, String phone) {
-        Map<String, Object> response = Iterators.singleOrNull(query(driver, createUser,
+    static Map<String, Object> CreateMember(Driver driver, String id, String phone, String password) {
+        Map<String, Object> response = Iterators.singleOrNull(query(driver, createMember,
                 new HashMap<String, Object>() {{
                     put("id", id);
                     put("phone", phone);
@@ -50,30 +51,37 @@ public interface CypherQueries {
             HashMap<String, Object> result = new HashMap<>();
             result.put("id", response.get("id"));
             result.put("phone", response.get("phone"));
-
             return result;
         }
         return null;
     }
 
-    static Map<String, Object> GetUser(Driver driver, String id) {
-        Map<String, Object> response = Iterators.singleOrNull(query(driver, getUser, new HashMap<String, Object>() {{ put("id", id); }} ));
+    static Map<String, Object> GetMember(Driver driver, String id, String phone) {
+        Map<String, Object> response = Iterators.singleOrNull(query(driver, getMember,
+                new HashMap<String, Object>() {{
+                    put("id", id);
+                    put("phone", phone);
+        }} ));
+        if (response != null) {
+            return (Map<String, Object>) response.get("member");
+        }
+        return null;
+    }
+
+    static Map<String, Object> AuthorizeMember(Driver driver, String token) {
+        Map<String, Object> response = Iterators.singleOrNull(query(driver, authorizeMember, new HashMap<String, Object>() {{ put("token", token); }} ));
         if (response != null) {
             return (Map<String, Object>) response.get("u");
         }
         return null;
     }
 
-    static Map<String, Object> AuthorizeUser(Driver driver, String token) {
-        Map<String, Object> response = Iterators.singleOrNull(query(driver, authorizeUser, new HashMap<String, Object>() {{ put("token", token); }} ));
-        if (response != null) {
-            return (Map<String, Object>) response.get("u");
-        }
-        return null;
-    }
-
-    static String TokenizeUser(Driver driver, String id) {
-        Map<String, Object> response = Iterators.singleOrNull(query(driver, tokenizeUser, new HashMap<String, Object>() {{ put("id", id); }} ));
+    static String TokenizeMember(Driver driver, String id, String phone) {
+        Map<String, Object> response = Iterators.singleOrNull(query(driver, tokenizeMember,
+                new HashMap<String, Object>() {{
+                    put("id", id);
+                    put("phone", phone);
+                }} ));
         return response.getOrDefault("token", null).toString();
     }
 

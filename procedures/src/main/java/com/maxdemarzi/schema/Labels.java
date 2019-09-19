@@ -11,6 +11,7 @@ public enum Labels implements Label {
     Message,
     Parameter,
     Product,
+    Reply,
     Rule,
     Tree
 }

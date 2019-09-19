@@ -48,6 +48,9 @@ public class Schema {
             schema.indexFor(Labels.Member)
                     .on(PHONE)
                     .create();
+            schema.indexFor(Labels.Member)
+                    .on(TOKEN)
+                    .create();
         }
 
         return Stream.of(new StringResult("Schema Generated"));

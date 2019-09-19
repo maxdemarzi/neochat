@@ -14,6 +14,7 @@ public interface Properties {
     public static final String NAME = "name";
     public static final String SCRIPT = "script";
     public static final String TEXT = "text";
+    public static final String TOKEN = "token";
     public static final String TYPE = "type";
     public static final String USERNAME = "username";
     public static final String VALUE = "value";
