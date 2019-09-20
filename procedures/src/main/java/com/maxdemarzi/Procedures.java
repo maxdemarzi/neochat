@@ -79,8 +79,8 @@ public class Procedures {
             // Insert the message into the Previous Message Chain
             if (member.hasRelationship(Direction.OUTGOING, PREV_MESSAGE)) {
                 Relationship prev = member.getSingleRelationship(PREV_MESSAGE, Direction.OUTGOING);
-                prev.delete();
                 Node last = prev.getEndNode();
+                prev.delete();
                 next.createRelationshipTo(last, PREV_MESSAGE);
             }
 
@@ -91,18 +91,17 @@ public class Procedures {
             // if so then get the answer and respond with the last intent.
             // question type: yes/no, specific choice, entity choice (product, money, time, etc)
 
-
             findIntents(text, results);
 
             // Get the Responses
             for (IntentResult result : results) {
-                respond(member, result, next);
+                reply(member, result, next);
             }
         }
         return results.stream();
     }
 
-    private void respond(Node member, IntentResult result, Node next) {
+    private void reply(Node member, IntentResult result, Node next) {
         // Which Decision Tree are we interested in?
         Node tree = db.findNode(Labels.Tree, ID, result.intent);
         if (tree != null) {
@@ -133,27 +132,29 @@ public class Procedures {
             result.setResponse(response);
 
             // Update Graph
-            Node responseNode = db.createNode(Labels.Reply);
+            Node reply = db.createNode(Labels.Reply);
+            reply.setProperty(INTENT, result.intent);
+            reply.setProperty(TEXT, result.response);
+            String[] args = convertArgsToStringArray(result);
+            reply.setProperty(ARGS, args);
 
-            responseNode.setProperty(INTENT, result.intent);
-            responseNode.setProperty(TEXT, result.response);
-
-            // Store Args in [type, value, type, value]
-            String[] args = new String[2 * result.args.size()];
-            int index = 0;
-            for(Map<String, Object> map : result.args) {
-                for (Map.Entry<String, Object> mapEntry : map.entrySet()) {
-                    args[index] = mapEntry.getKey();
-                    index++;
-                    args[index] = mapEntry.getValue().toString();
-                    index++;
-                }
-            }
-            responseNode.setProperty(ARGS, args);
-
-            next.createRelationshipTo(responseNode, RelationshipTypes.HAS_REPLY);
+            next.createRelationshipTo(reply, RelationshipTypes.HAS_REPLY);
         }
+    }
 
+    private String[] convertArgsToStringArray(IntentResult result) {
+        // Store Args in [type, value, type, value]
+        String[] args = new String[2 * result.args.size()];
+        int index = 0;
+        for(Map<String, Object> map : result.args) {
+            for (Map.Entry<String, Object> mapEntry : map.entrySet()) {
+                args[index] = mapEntry.getKey();
+                index++;
+                args[index] = mapEntry.getValue().toString();
+                index++;
+            }
+        }
+        return args;
     }
 
     private String fillResponseWithFacts(Map<String, Object> facts, String response) {

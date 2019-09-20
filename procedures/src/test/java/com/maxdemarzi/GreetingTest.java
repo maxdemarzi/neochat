@@ -57,7 +57,7 @@ public class GreetingTest {
             result = session.run( "CALL com.maxdemarzi.chat($id, $phone, $text)",
                     parameters( "id", "a2", "phone", "456", "text", "Hello?" ) );
 
-             record = result.single();
+            record = result.single();
             assertThat(record.get("intent").asString()).isEqualTo("greeting");
             assertThat(record.get("response").asString()).doesNotContain("Max");
         }
@@ -69,6 +69,5 @@ public class GreetingTest {
             "CREATE (a1)-[:HAS_MEMBER]->(m1)" +
             "CREATE (a2:Account {id:'a2'})" +
             "CREATE (m2:Member { phone:'456'})" +
-            "CREATE (a2)-[:HAS_MEMBER]->(m2)"
-            ;
+            "CREATE (a2)-[:HAS_MEMBER]->(m2)";
 }
