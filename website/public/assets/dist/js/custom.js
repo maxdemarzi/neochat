@@ -16,7 +16,7 @@
             return false;
         }
 
-        httpRequest.onreadystatechange = updateChat;//(chatText);
+        httpRequest.onreadystatechange = updateChat;
         httpRequest.open('POST', '/chat', true);
         httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         httpRequest.send('chatText=' + encodeURIComponent(chatText));

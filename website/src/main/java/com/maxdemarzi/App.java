@@ -49,19 +49,20 @@ public class App extends Jooby {
             String phone = form.get("phone").toOptional().orElse("");
             password = BCrypt.hashpw(password, BCrypt.gensalt());
             Driver driver = require(Driver.class);
-            Map<String, Object> user = CypherQueries.CreateMember(driver, id, phone, password);
-            if (user != null) {
+            Map<String, Object> member = CypherQueries.CreateMember(driver, id, phone, password);
+            if (member != null) {
                 String token = CypherQueries.TokenizeMember(driver, id, phone);
                 if (token != null) {
                     // Set a token cookie for 2 hours
                     ctx.setResponseCookie(new Cookie("token", token).setMaxAge(7200));
-                    ctx.session().put("id", (String)user.get("id"));
+                    ctx.session().put("id", (String)member.get("id"));
+                    ctx.session().put("phone", (String)member.get("phone"));
                     // Kick off enrichment job
                     enrichmentJob.queue.add(new HashMap<String, Object>() {{
                         put("email", id);
                         put("phone", phone);
                     }});
-                    return views.home.template((String)user.get("id"));
+                    return views.home.template((String)member.get("id"));
                 }
             }
             return views.register.template();
@@ -74,14 +75,14 @@ public class App extends Jooby {
             String phone = form.get("phone").toOptional().orElse("");
             String password = form.get("password").toOptional().orElse("");
             Driver driver = require(Driver.class);
-            Map<String, Object> member = CypherQueries.GetMember(driver, id, phone);
-            if (member != null && BCrypt.checkpw(password, (String) member.get("password"))) {
+            String encryptedPassword = CypherQueries.GetPassword(driver, id, phone);
+            if (encryptedPassword != null && BCrypt.checkpw(password, encryptedPassword)) {
                 String token = CypherQueries.TokenizeMember(driver, id, phone);
                 if (token != null) {
                     // Set a token cookie for 2 hours
                     ctx.setResponseCookie(new Cookie("token", token).setMaxAge(7200));
-                    ctx.session().put("id", (String)member.get("id"));
-                    ctx.session().put("phone", (String)member.get("phone"));
+                    ctx.session().put("id", id);
+                    ctx.session().put("phone", phone);
                     return views.home.template(id);
                 }
             }

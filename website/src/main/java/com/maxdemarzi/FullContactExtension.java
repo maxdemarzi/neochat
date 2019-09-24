@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 
 public class FullContactExtension implements Extension {
     @Override
-    public void install(@Nonnull Jooby application) throws Exception {
+    public void install(@Nonnull Jooby application) {
         Environment env = application.getEnvironment();
         Config conf = env.getConfig();
 

@@ -7,8 +7,9 @@ import java.util.*;
 
 public interface CypherQueries {
 
+    String getPassword = "MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE a.id = $id AND member.phone = $phone RETURN a.password AS password";
     String getMember = "MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE a.id = $id AND member.phone = $phone RETURN member";
-    String authorizeMember = "MATCH (member:Member) WHERE member.token = $token RETURN member";
+    String authorizeMember = "MATCH (a:Account)-[:HAS_MEMBER]->(member:Member) WHERE member.token = $token RETURN a.id AS id, member.phone AS phone";
     String tokenizeMember = "MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE a.id = $id AND member.phone = $phone SET member.token = $phone + toString(rand()) RETURN member.token AS token";
     String createMember = "CREATE (a:Account { id: $id, password: $password })-[:HAS_MEMBER]->(member:Member { phone: $phone } ) RETURN a.id AS id, member.phone AS phone";
     String enrichUser = "MATCH (a:Account)-[:HAS_MEMBER]->(member) WHERE a.id = $id AND member.phone = $phone SET member += $properties RETURN member";
@@ -68,12 +69,20 @@ public interface CypherQueries {
         return null;
     }
 
-    static Map<String, Object> AuthorizeMember(Driver driver, String token) {
-        Map<String, Object> response = Iterators.singleOrNull(query(driver, authorizeMember, new HashMap<String, Object>() {{ put("token", token); }} ));
+    static String GetPassword(Driver driver, String id, String phone) {
+        Map<String, Object> response = Iterators.singleOrNull(query(driver, getPassword,
+                new HashMap<String, Object>() {{
+                    put("id", id);
+                    put("phone", phone);
+                }} ));
         if (response != null) {
-            return (Map<String, Object>) response.get("u");
+            return (String) response.get("password");
         }
         return null;
+    }
+
+    static Map<String, Object> AuthorizeMember(Driver driver, String token) {
+        return Iterators.singleOrNull(query(driver, authorizeMember, new HashMap<String, Object>() {{ put("token", token); }} ));
     }
 
     static String TokenizeMember(Driver driver, String id, String phone) {

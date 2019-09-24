@@ -1,0 +1,68 @@
+<ul class="graph-diagram-markup" data-internal-scale="2.33" data-external-scale="1">
+  <li class="node" data-node-id="0" data-x="-200.67315981623435" data-y="-98.20175144703086">
+    <span class="caption">Tree</span><dl class="properties"><dt>id</dt><dd>String</dd></dl></li>
+  <li class="node" data-node-id="1" data-x="-7.114027882850128" data-y="-98.20175144703086">
+    <span class="caption">Rule</span><dl class="properties"><dt>parameter_names</dt><dd>String</dd><dt>parameter_types</dt><dd>String</dd><dt>expression</dt><dd>String</dd></dl></li>
+  <li class="node" data-node-id="2" data-x="340.0377831192999" data-y="-98.20175144703086">
+    <span class="caption">Answer</span><dl class="properties"><dt>id</dt><dd>String</dd></dl></li>
+  <li class="node" data-node-id="3" data-x="182.1305083573636" data-y="100.09812171674074">
+    <span class="caption">Rule</span>
+  </li>
+  <li class="node" data-node-id="4" data-x="535.1294642108704" data-y="-167.42195725338647">
+    <span class="caption">Response</span><dl class="properties"><dt>text</dt><dd>String</dd><dt>parameter_names</dt><dd>String[]</dd></dl></li>
+  <li class="node" data-node-id="5" data-x="535.1294642108704" data-y="-57.54873225003354">
+    <span class="caption">Response</span>
+  </li>
+  <li class="node" data-node-id="6" data-x="535.1294642108704" data-y="50.689815644030894">
+    <span class="caption">Answer</span>
+  </li>
+  <li class="node" data-node-id="7" data-x="535.1294642108704" data-y="160.0097000056581">
+    <span class="caption">Answer</span>
+  </li>
+  <li class="node" data-node-id="8" data-x="535.1294642108704" data-y="264.812651147147">
+    <span class="caption">Answer</span>
+  </li>
+  <li class="node" data-node-id="9" data-x="-412.90017729665055" data-y="-167.42195725338647"></li>
+  <li class="node" data-node-id="10" data-x="942.4030668234107" data-y="314.08843421117444"></li>
+  <li class="node" data-node-id="11" data-x="-7.114027882850128" data-y="199.49072304918002">
+    <span class="caption">Parameter</span><dl class="properties"><dt>id</dt><dd>String</dd><dt>type</dt><dd>String</dd></dl></li>
+  <li class="node" data-node-id="12" data-x="736.8844071416892" data-y="50.689815644030894">
+    <span class="caption">Response</span>
+  </li>
+  <li class="node" data-node-id="13" data-x="736.8844071416892" data-y="160.0097000056581">
+    <span class="caption">Response</span>
+  </li>
+  <li class="node" data-node-id="14" data-x="736.8844071416892" data-y="264.812651147147">
+    <span class="caption">Response</span>
+  </li>
+  <li class="node" data-node-id="15" data-x="182.1305083573636" data-y="199.49072304918002">
+    <span class="caption">Response</span>
+  </li>
+  <li class="relationship" data-from="0" data-to="1">
+    <span class="type">HAS</span>
+  </li>
+  <li class="relationship" data-from="1" data-to="2">
+    <span class="type">IS_TRUE</span>
+  </li>
+  <li class="relationship" data-from="1" data-to="3">
+    <span class="type">IS_FALSE</span>
+  </li>
+  <li class="relationship" data-from="2" data-to="4"></li>
+  <li class="relationship" data-from="2" data-to="5"></li>
+  <li class="relationship" data-from="3" data-to="6">
+    <span class="type">OPTION_1</span>
+  </li>
+  <li class="relationship" data-from="3" data-to="7">
+    <span class="type">OPTION_2</span>
+  </li>
+  <li class="relationship" data-from="3" data-to="8">
+    <span class="type">OPTION_3</span>
+  </li>
+  <li class="relationship" data-from="1" data-to="11">
+    <span class="type">REQUIRES</span>
+  </li>
+  <li class="relationship" data-from="6" data-to="12"></li>
+  <li class="relationship" data-from="7" data-to="13"></li>
+  <li class="relationship" data-from="8" data-to="14"></li>
+  <li class="relationship" data-from="11" data-to="15"></li>
+</ul>

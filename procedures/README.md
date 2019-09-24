@@ -35,7 +35,7 @@ Create some seed data:
 Train the models:
 
     CALL com.maxdemarzi.train(model_directory, intents_directory);
-    CALL com.maxdemarzi.train("/Users/maxdemarzi/Documents/Projects/neochat/procedures/src/main/resources/data/models/", "/Users/maxdemarzi/Documents/Projects/shadowbot/procedures/src/main/resources/data/training/intents")
+    CALL com.maxdemarzi.train("/Users/maxdemarzi/Documents/Projects/neochat/procedures/src/main/resources/data/models/", "/Users/maxdemarzi/Documents/Projects/neochat/procedures/src/main/resources/data/training/intents")
     
 
 Models
