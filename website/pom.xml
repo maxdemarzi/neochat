@@ -23,7 +23,7 @@
         <neo4j.version>3.5.8</neo4j.version>
         <bcrypt.version>0.4</bcrypt.version>
         <retrofit.version>2.6.1</retrofit.version>
-        <guava.version>28.0-jre</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
